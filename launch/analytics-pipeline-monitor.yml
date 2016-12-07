@@ -11,6 +11,8 @@ env:
   - FAST_PG_PASSWORD
   - FAST_PG_HOST
   - FAST_PG_PORT
+dependencies:
+- gearmand
 resources:
   cpu: 0.1
   max_mem: 0.1
