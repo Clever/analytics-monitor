@@ -23,3 +23,6 @@ run: build
 $(PKGS): golang-test-all-deps
 	$(call golang-test-all,$@)
 
+install_deps: $(GOPATH)/bin/glide
+	@$(GOPATH)/bin/glide install
+

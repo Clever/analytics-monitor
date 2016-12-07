@@ -1,0 +1,12 @@
+hash: 3869c13970523347270dcfce26e9adf51ac8efad20eefe7bb7bec176512ae47a
+updated: 2016-12-06T18:06:29.177400869-08:00
+imports:
+- name: github.com/lib/pq
+  version: 50761b0867bd1d9d069276790bcd4a3bccf2324a
+  subpackages:
+  - oid
+- name: gopkg.in/Clever/kayvee-go.v5
+  version: 865aa5e4bbe8e274c69accd53f0b1e2ecc484cd8
+  subpackages:
+  - logger
+testImports: []
