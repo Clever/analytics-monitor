@@ -1,5 +1,5 @@
 include golang.mk
-.DEFAULT_GOAL := test # override default goal set in library makefile
+.DEFAULT_GOAL := all
 
 SHELL := /bin/bash
 PKG := github.com/Clever/analytics-pipeline-monitor
@@ -10,16 +10,22 @@ EXECUTABLE = $(shell basename $(PKG))
 
 $(eval $(call golang-version-check,1.7))
 
+all: test build
+
 test: $(PKGS)
 
 build:
 	go build -o bin/$(EXECUTABLE) $(PKG)
 
 run: build
-	gearcmd --name=analytics-pipeline-monitor --cmd=bin/$(EXECUTABLE) --parseargs=false
+	./bin/$(EXECUTABLE)
 
 $(PKGS): golang-test-all-deps
 	$(call golang-test-all,$@)
 
-vendor: golang-godep-vendor-deps
-	$(call golang-godep-vendor,$(PKGS))
+
+$(GOPATH)/bin/glide:
+	@go get github.com/Masterminds/glide
+
+install_deps: $(GOPATH)/bin/glide
+	@$(GOPATH)/bin/glide install

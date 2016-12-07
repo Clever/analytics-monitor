@@ -1,0 +1,6 @@
+package: github.com/Clever/analytics-pipeline-monitor
+import:
+- package: github.com/lib/pq
+- package: gopkg.in/Clever/kayvee-go.v5
+  subpackages:
+  - logger
