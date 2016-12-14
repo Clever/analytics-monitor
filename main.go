@@ -23,6 +23,12 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	performLoadErrorsCheck(fastConnection)
+	performLoadErrorsCheck(prodConnection)
+
+	performLatencyChecks(fastConnection)
+	performLatencyChecks(prodConnection)
+
 	// For testing TODO: remove once finished
 	testConnections(fastConnection, "timeline.events")
 	testConnections(prodConnection, "mongo.oauthclients")
@@ -36,4 +42,16 @@ func testConnections(redshiftClient *db.RedshiftClient, tableName string) {
 	} else {
 		fmt.Printf("Redshift has %d rows in %s\n", count, tableName)
 	}
+}
+
+// TODO (IP-1204): Perform STL_LOAD_ERRORS Latency Check
+// Doesn't need to return anything since Kayvee logging should be sufficient
+func performLoadErrorsCheck(redshiftClient *db.RedshiftClient) {
+
+}
+
+// TODO (IP-1203): Perform Latency Checks
+// Doesn't need to return anything since Kayvee logging should be sufficient
+func performLatencyChecks(redshiftClient *db.RedshiftClient) {
+
 }
