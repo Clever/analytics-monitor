@@ -13,11 +13,6 @@ func main() {
 	flag.Parse()
 	config.Parse()
 
-	testConnections()
-}
-
-// For testing
-func testConnections() {
 	fastConnection, err := db.NewRedshiftFastClient()
 	if err != nil {
 		log.Fatalln(err)
@@ -28,17 +23,17 @@ func testConnections() {
 		log.Fatalln(err)
 	}
 
-	count, err := fastConnection.CountRows("timeline.events")
-	if err != nil {
-		fmt.Printf("Error with fast prod query: %v.\n", err)
-	} else {
-		fmt.Printf("Fast prod has %d timeline events\n", count)
-	}
+	// For testing TODO: remove once finished
+	testConnections(fastConnection, "timeline.events")
+	testConnections(prodConnection, "mongo.oauthclients")
+}
 
-	count, err = prodConnection.CountRows("mongo.oauthclients")
+// For testing TODO: remove once finished
+func testConnections(redshiftClient *db.RedshiftClient, tableName string) {
+	count, err := redshiftClient.CountRows(tableName)
 	if err != nil {
-		fmt.Printf("Error with prod query: %v.\n", err)
+		fmt.Printf("Error with client querying table %s: %v.\n", tableName, err)
 	} else {
-		fmt.Printf("Prod has %d mongo oauthclients \n", count)
+		fmt.Printf("Redshift has %d rows in %s\n", count, tableName)
 	}
 }
