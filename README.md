@@ -28,6 +28,12 @@ Defining checks in analytics-pipeline-monitor can be accomplished by adding a ne
 
 `analytics-pipeline-monitor` then reads from this config to perform latency checks. `schema` + `table` identifies the table, and `latency.timestamp_column` identifies the time a row enters Redshift. `latency.sla` configures the maximum amount of latency acceptable for the table's data in [Go time format](https://golang.org/pkg/time/#ParseDuration). If the threshold is exceeded, then analytics-pipeline-monitor fires an alert in SignalFx.
 
+## Running locally
+
+```
+ark start analytics-pipeline-monitor -e clever-dev -l
+```
+
 ## Deploying
 
 ```
