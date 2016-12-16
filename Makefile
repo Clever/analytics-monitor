@@ -16,6 +16,9 @@ test: $(PKGS)
 
 build:
 	go build -o bin/$(EXECUTABLE) $(PKG)
+	mkdir -p bin/config
+	cp config/latency_config.json bin/config/latency_config.json
+	cp kvconfig.yml bin/kvconfig.yml
 
 run: build
 	./bin/$(EXECUTABLE)

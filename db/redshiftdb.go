@@ -42,6 +42,7 @@ func newRedshiftClient(info RedshiftCredentials) (*RedshiftClient, error) {
 	return &RedshiftClient{session}, nil
 }
 
+// NewRedshiftProdClient initializes a client to fresh prod
 func NewRedshiftProdClient() (*RedshiftClient, error) {
 	info := RedshiftCredentials{
 		Host:     config.RedshiftProdHost,
@@ -54,6 +55,7 @@ func NewRedshiftProdClient() (*RedshiftClient, error) {
 	return newRedshiftClient(info)
 }
 
+// NewRedshiftFastClient initializes a client to fast prod
 func NewRedshiftFastClient() (*RedshiftClient, error) {
 	info := RedshiftCredentials{
 		Host:     config.RedshiftFastHost,
@@ -66,19 +68,22 @@ func NewRedshiftFastClient() (*RedshiftClient, error) {
 	return newRedshiftClient(info)
 }
 
-// For testing
-func (c *RedshiftClient) CountRows(tablename string) (int64, error) {
-	query := fmt.Sprintf("Select count(*) from %s", tablename)
-	rows, err := c.session.Query(query)
+// QueryLatency returns the latency for a given table,
+// defined as the time difference in hours between now
+// and the most recent record in a table. Returns the latency,
+// if applicable, and whether or not the table contains rows
+func (c *RedshiftClient) QueryLatency(timestampColumn, schemaName, tableName string) (int64, bool, error) {
+	latencyQuery := fmt.Sprintf("SELECT datediff(hour, max(%s), getdate()) FROM %s.%s",
+		timestampColumn, schemaName, tableName)
+	rows, err := c.session.Query(latencyQuery)
 	if err != nil {
-		return 0, err
+		return 0, false, err
 	}
 
-	var count sql.NullInt64
+	var latency sql.NullInt64
 	rows.Next()
-	if err := rows.Scan(&count); err != nil {
-		return 0, err
+	if err := rows.Scan(&latency); err != nil {
+		return 0, false, err
 	}
-
-	return count.Int64, nil
+	return latency.Int64, latency.Valid, nil
 }

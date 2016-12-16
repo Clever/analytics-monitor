@@ -1,0 +1,19 @@
+routes:
+  job-finished:
+    matchers:
+      title: [ "job-finished" ]
+    output:
+      type: "alerts"
+      series: "job.finished"
+      dimensions: [ "function", "payload" ]
+      value: "value"
+      stat_type: "gauge"
+  check-latency:
+    matchers:
+      title: [ "check-latency" ]
+    output:
+      type: "alerts"
+      series: "apm.latency"
+      dimensions: [ "table", "latency_threshold" ]
+      value: "value"
+      stat_type: "gauge"

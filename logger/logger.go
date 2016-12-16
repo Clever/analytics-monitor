@@ -1,10 +1,18 @@
 package logger
 
 import (
-	"gopkg.in/Clever/kayvee-go.v5/logger"
+	"gopkg.in/Clever/kayvee-go.v6/logger"
 )
 
-var log *logger.Logger
+var log logger.KayveeLogger
+
+const (
+	// jobFinished refers to job completions
+	jobFinished = "job-finished"
+
+	// checkLatency refers to latency check results
+	checkLatency = "check-latency"
+)
 
 func init() {
 	log = logger.New("analytics-pipeline-monitor")
@@ -12,6 +20,39 @@ func init() {
 
 // M is an alias for map[string]interface{} to make log lines less painful to write.
 type M logger.M
+
+// GetLogger returns a reference to the logger
+func GetLogger() logger.KayveeLogger {
+	return log
+}
+
+// SetGlobalRouting installs a new log router with the input config
+func SetGlobalRouting(kvconfigPath string) error {
+	return logger.SetGlobalRouting(kvconfigPath)
+}
+
+// JobFinishedEvent logs when analytics-pipeline-monitor has completed
+// along with payload and success/failure
+func JobFinishedEvent(payload string, didSucceed bool) {
+	value := 0
+	if didSucceed {
+		value = 1
+	}
+	log.GaugeIntD(jobFinished, value, M{
+		"payload": payload,
+		"success": didSucceed,
+	})
+}
+
+// CheckLatencyEvent logs the results of a latency check
+// to be log routed to SignalFx
+func CheckLatencyEvent(latencyErrValue int, fullTableName, reportedLatency, threshold string) {
+	log.GaugeIntD(checkLatency, latencyErrValue, logger.M{
+		"table":             fullTableName,
+		"latency":           reportedLatency,
+		"latency_threshold": threshold,
+	})
+}
 
 // Info logs at the info level
 func Info(title string, data M) {

@@ -1,6 +1,8 @@
 package config
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"os"
 
 	"github.com/Clever/analytics-pipeline-monitor/logger"
@@ -24,6 +26,30 @@ var (
 	RedshiftFastPassword string
 )
 
+// ClusterChecks stores latency checks by cluster
+type ClusterChecks struct {
+	ProdChecks     []SchemaChecks `json:"prod"`
+	FastProdChecks []SchemaChecks `json:"fast-prod"`
+}
+
+// SchemaChecks stores an array of checks by schema
+type SchemaChecks struct {
+	SchemaName string        `json:"schema"`
+	Checks     []TableChecks `json:"checks"`
+}
+
+// TableChecks stores checks per view or table
+type TableChecks struct {
+	TableName string      `json:"table"`
+	Latency   LatencyInfo `json:"latency"`
+}
+
+// LatencyInfo stores information for a latency check
+type LatencyInfo struct {
+	TimestampColumn string `json:"timestamp_column"`
+	Threshold       string `json:"threshold"`
+}
+
 // Parse reads environment variables and initializes the config.
 func Parse() {
 	RedshiftProdHost = requiredEnv("PG_HOST")
@@ -37,6 +63,24 @@ func Parse() {
 	RedshiftFastDatabase = requiredEnv("FAST_PG_DATABASE")
 	RedshiftFastUsername = requiredEnv("FAST_PG_USER")
 	RedshiftFastPassword = requiredEnv("FAST_PG_PASSWORD")
+}
+
+// ParseChecks reads in the latency check definitions
+func ParseChecks(latencyConfigPath string) ClusterChecks {
+	latencyJSON, err := ioutil.ReadFile(latencyConfigPath)
+	if err != nil {
+		logger.Critical("read-latency-config-error", logger.M{"error": err.Error()})
+		os.Exit(1)
+	}
+
+	var checks ClusterChecks
+	err = json.Unmarshal(latencyJSON, &checks)
+	if err != nil {
+		logger.Critical("parse-latency-checks-error", logger.M{"error": err.Error()})
+		os.Exit(1)
+	}
+
+	return checks
 }
 
 // requiredEnv tries to find a value in the environment variables. If a value is not
