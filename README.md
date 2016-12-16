@@ -13,20 +13,24 @@ Owned by eng-internal-products
 - Easily improves coverage by declaring latency checks and thresholds in a config file. No application code is required to add additional checks or alerts for future tables.
 
 ## Declaring New Latency Checks
-Defining checks in analytics-pipeline-monitor can be accomplished by adding a new entry to a JSON config in the following format:
+Defining checks in analytics-pipeline-monitor can be accomplished by adding a new entry to `config/latency_config.json` in the following format:
 
-  prod: [
+  "prod": [
     {
-      schema: "mongo",
-      table: "districts",
-      latency: {
-        timestamp_column: "_data_timestamp",
-        sla: "2h",
-      },
+      "schema": "mongo",
+      "checks": [
+        {
+          "table": "districts",
+          "latency": {
+            "timestamp_column": "_data_timestamp",
+            "threshold": "2h",
+          }
+        },
+      ]
     }, ...
   ]
 
-`analytics-pipeline-monitor` then reads from this config to perform latency checks. `schema` + `table` identifies the table, and `latency.timestamp_column` identifies the time a row enters Redshift. `latency.sla` configures the maximum amount of latency acceptable for the table's data in [Go time format](https://golang.org/pkg/time/#ParseDuration). If the threshold is exceeded, then analytics-pipeline-monitor fires an alert in SignalFx.
+`analytics-pipeline-monitor` then reads from this config to perform latency checks. `schema` + `table` identifies the table, and `latency.timestamp_column` identifies the time a row enters Redshift. `latency.threshold` configures the maximum amount of latency acceptable for the table's data in [Go time format](https://golang.org/pkg/time/#ParseDuration). If the threshold is exceeded, then analytics-pipeline-monitor fires an alert in SignalFx.
 
 ## Running locally
 
