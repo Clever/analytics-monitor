@@ -67,11 +67,11 @@ func fatalIfErr(err error, title string) {
 
 // TODO (IP-1204): Perform STL_LOAD_ERRORS Latency Check
 // Doesn't need to return anything since Kayvee logging should be sufficient
-func performLoadErrorsCheck(redshiftClient *db.RedshiftClient) {
+func performLoadErrorsCheck(redshiftClient db.RedshiftClient) {
 
 }
 
-func performLatencyChecks(redshiftClient *db.RedshiftClient, clusterConfig []config.SchemaChecks, clusterName string) {
+func performLatencyChecks(redshiftClient db.RedshiftClient, clusterConfig []config.SchemaChecks, clusterName string) {
 	for _, schemaConfig := range clusterConfig {
 		schemaName := schemaConfig.SchemaName
 		for _, check := range schemaConfig.Checks {

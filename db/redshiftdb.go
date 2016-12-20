@@ -9,8 +9,14 @@ import (
 	_ "github.com/lib/pq" // Postgres driver.
 )
 
-// RedshiftClient contains the redshift client connection.
-type RedshiftClient struct {
+// RedshiftClient exposes an interface for querying Redshift.
+type RedshiftClient interface {
+	QueryLatency(timestampColumn, schemaName, tableName string) (int64, bool, error)
+}
+
+// redshiftClient provides a default implementation of RedshiftClient
+// that contains the redshift client connection.
+type redshiftClient struct {
 	session *sql.DB
 }
 
@@ -24,7 +30,7 @@ type RedshiftCredentials struct {
 }
 
 // NewRedshiftClient creates a Redshift db client.
-func newRedshiftClient(info RedshiftCredentials) (*RedshiftClient, error) {
+func newRedshiftClient(info RedshiftCredentials) (RedshiftClient, error) {
 	const connectionTimeout = 60
 	connectionParams := fmt.Sprintf("host=%s port=%s dbname=%s connect_timeout=%d",
 		info.Host, info.Port, info.Database, connectionTimeout)
@@ -39,11 +45,11 @@ func newRedshiftClient(info RedshiftCredentials) (*RedshiftClient, error) {
 		return nil, err
 	}
 
-	return &RedshiftClient{session}, nil
+	return &redshiftClient{session}, nil
 }
 
 // NewRedshiftProdClient initializes a client to fresh prod
-func NewRedshiftProdClient() (*RedshiftClient, error) {
+func NewRedshiftProdClient() (RedshiftClient, error) {
 	info := RedshiftCredentials{
 		Host:     config.RedshiftProdHost,
 		Port:     config.RedshiftProdPort,
@@ -56,7 +62,7 @@ func NewRedshiftProdClient() (*RedshiftClient, error) {
 }
 
 // NewRedshiftFastClient initializes a client to fast prod
-func NewRedshiftFastClient() (*RedshiftClient, error) {
+func NewRedshiftFastClient() (RedshiftClient, error) {
 	info := RedshiftCredentials{
 		Host:     config.RedshiftFastHost,
 		Port:     config.RedshiftFastPort,
@@ -72,7 +78,7 @@ func NewRedshiftFastClient() (*RedshiftClient, error) {
 // defined as the time difference in hours between now
 // and the most recent record in a table. Returns the latency,
 // if applicable, and whether or not the table contains rows
-func (c *RedshiftClient) QueryLatency(timestampColumn, schemaName, tableName string) (int64, bool, error) {
+func (c *redshiftClient) QueryLatency(timestampColumn, schemaName, tableName string) (int64, bool, error) {
 	latencyQuery := fmt.Sprintf("SELECT datediff(hour, max(%s), getdate()) FROM %s.%s",
 		timestampColumn, schemaName, tableName)
 	rows, err := c.session.Query(latencyQuery)
