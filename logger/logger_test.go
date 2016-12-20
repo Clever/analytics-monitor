@@ -5,11 +5,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/Clever/kayvee-go.v6/logger"
+	kvLogger "gopkg.in/Clever/kayvee-go.v6/logger"
 )
 
 func init() {
-	err := logger.SetGlobalRouting("../kvconfig.yml")
+	err := kvLogger.SetGlobalRouting("../kvconfig.yml")
 	if err != nil {
 		l.Fatal(err)
 	}
@@ -40,10 +40,10 @@ func TestJobFinished(t *testing.T) {
 	for _, test := range tests {
 		t.Logf("Routing rule %s", test.rule)
 
-		mocklog := logger.NewMockCountLogger("analytics-pipeline-monitor")
-		log = mocklog // Overrides package level logger
+		mocklog := kvLogger.NewMockCountLogger("analytics-pipeline-monitor")
+		defaultLog.log = mocklog // Overrides package level logger
 
-		JobFinishedEvent(test.payload, test.didSucceed)
+		defaultLog.JobFinishedEvent(test.payload, test.didSucceed)
 		counts := mocklog.RuleCounts()
 
 		assert.Equal(counts[test.rule], 1)
@@ -82,10 +82,10 @@ func TestCheckLatency(t *testing.T) {
 	for _, test := range tests {
 		t.Logf("Routing rule %s", test.rule)
 
-		mocklog := logger.NewMockCountLogger("analytics-pipeline-monitor")
-		log = mocklog // Overrides package level logger
+		mocklog := kvLogger.NewMockCountLogger("analytics-pipeline-monitor")
+		defaultLog.log = mocklog // Overrides package level logger
 
-		CheckLatencyEvent(test.errValue, test.tableName, test.latency, test.latencyThreshold)
+		defaultLog.CheckLatencyEvent(test.errValue, test.tableName, test.latency, test.latencyThreshold)
 		counts := mocklog.RuleCounts()
 
 		assert.Equal(counts[test.rule], 1)

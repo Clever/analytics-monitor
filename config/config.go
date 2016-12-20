@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/Clever/analytics-pipeline-monitor/logger"
+	l "github.com/Clever/analytics-pipeline-monitor/logger"
 )
 
 var (
@@ -69,14 +69,14 @@ func Parse() {
 func ParseChecks(latencyConfigPath string) ClusterChecks {
 	latencyJSON, err := ioutil.ReadFile(latencyConfigPath)
 	if err != nil {
-		logger.Critical("read-latency-config-error", logger.M{"error": err.Error()})
+		l.GetKVLogger().CriticalD("read-latency-config-error", l.M{"error": err.Error()})
 		os.Exit(1)
 	}
 
 	var checks ClusterChecks
 	err = json.Unmarshal(latencyJSON, &checks)
 	if err != nil {
-		logger.Critical("parse-latency-checks-error", logger.M{"error": err.Error()})
+		l.GetKVLogger().CriticalD("parse-latency-checks-error", l.M{"error": err.Error()})
 		os.Exit(1)
 	}
 
@@ -88,7 +88,7 @@ func ParseChecks(latencyConfigPath string) ClusterChecks {
 func requiredEnv(key string) string {
 	value := os.Getenv(key)
 	if value == "" {
-		logger.Critical("required-env", logger.M{"name": key})
+		l.GetKVLogger().CriticalD("required-env", l.M{"name": key})
 		os.Exit(1)
 	}
 	return value

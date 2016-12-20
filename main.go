@@ -14,17 +14,21 @@ import (
 
 	"github.com/Clever/analytics-pipeline-monitor/config"
 	"github.com/Clever/analytics-pipeline-monitor/db"
-	"github.com/Clever/analytics-pipeline-monitor/logger"
+	l "github.com/Clever/analytics-pipeline-monitor/logger"
 )
 
-var latencyConfigPath string
+var (
+	latencyConfigPath string
+	logger            l.Logger
+)
 
 func init() {
+	logger = l.GetLogger()
 	dir, err := osext.ExecutableFolder()
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = logger.SetGlobalRouting(path.Join(dir, "kvconfig.yml"))
+	err = l.SetGlobalRouting(path.Join(dir, "kvconfig.yml"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -38,14 +42,10 @@ func main() {
 	defer logger.JobFinishedEvent(strings.Join(os.Args[1:], " "), true)
 
 	fastConnection, err := db.NewRedshiftFastClient()
-	if err != nil {
-		log.Fatalln(err)
-	}
+	fatalIfErr(err, "redshift-fast-failed-init")
 
 	prodConnection, err := db.NewRedshiftProdClient()
-	if err != nil {
-		log.Fatalln(err)
-	}
+	fatalIfErr(err, "redshift-prod-failed-init")
 
 	latencyChecks := config.ParseChecks(latencyConfigPath)
 
@@ -60,7 +60,7 @@ func main() {
 func fatalIfErr(err error, title string) {
 	if err != nil {
 		logger.JobFinishedEvent(strings.Join(os.Args[1:], " "), false)
-		logger.GetLogger().CriticalD(title, logger.M{"error": err.Error()})
+		l.GetKVLogger().CriticalD(title, l.M{"error": err.Error()})
 		os.Exit(1)
 	}
 }

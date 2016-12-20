@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/Clever/analytics-pipeline-monitor/config"
-	"github.com/Clever/analytics-pipeline-monitor/logger"
+	l "github.com/Clever/analytics-pipeline-monitor/logger"
 	_ "github.com/lib/pq" // Postgres driver.
 )
 
@@ -30,7 +30,7 @@ func newRedshiftClient(info RedshiftCredentials) (*RedshiftClient, error) {
 		info.Host, info.Port, info.Database, connectionTimeout)
 	credentialsParams := fmt.Sprintf("user=%s password=%s", info.Username, info.Password)
 
-	logger.Info("New-redshift-client", logger.M{
+	l.GetKVLogger().InfoD("New-redshift-client", l.M{
 		"connectionParams": connectionParams,
 	})
 	openParams := fmt.Sprintf("%s %s", connectionParams, credentialsParams)
