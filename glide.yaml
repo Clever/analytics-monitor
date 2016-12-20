@@ -1,6 +1,10 @@
 package: github.com/Clever/analytics-pipeline-monitor
 import:
 - package: github.com/lib/pq
-- package: gopkg.in/Clever/kayvee-go.v5
+- package: gopkg.in/Clever/kayvee-go.v6
+  version: v6.2.0
+- package: github.com/kardianos/osext
+- package: github.com/stretchr/testify
+  version: v1.1.4
   subpackages:
-  - logger
+  - assert

@@ -5,12 +5,18 @@ import (
 	"fmt"
 
 	"github.com/Clever/analytics-pipeline-monitor/config"
-	"github.com/Clever/analytics-pipeline-monitor/logger"
+	l "github.com/Clever/analytics-pipeline-monitor/logger"
 	_ "github.com/lib/pq" // Postgres driver.
 )
 
-// RedshiftClient contains the redshift client connection.
-type RedshiftClient struct {
+// RedshiftClient exposes an interface for querying Redshift.
+type RedshiftClient interface {
+	QueryLatency(timestampColumn, schemaName, tableName string) (int64, bool, error)
+}
+
+// redshiftClient provides a default implementation of RedshiftClient
+// that contains the redshift client connection.
+type redshiftClient struct {
 	session *sql.DB
 }
 
@@ -24,13 +30,13 @@ type RedshiftCredentials struct {
 }
 
 // NewRedshiftClient creates a Redshift db client.
-func newRedshiftClient(info RedshiftCredentials) (*RedshiftClient, error) {
+func newRedshiftClient(info RedshiftCredentials) (RedshiftClient, error) {
 	const connectionTimeout = 60
 	connectionParams := fmt.Sprintf("host=%s port=%s dbname=%s connect_timeout=%d",
 		info.Host, info.Port, info.Database, connectionTimeout)
 	credentialsParams := fmt.Sprintf("user=%s password=%s", info.Username, info.Password)
 
-	logger.Info("New-redshift-client", logger.M{
+	l.GetKVLogger().InfoD("New-redshift-client", l.M{
 		"connectionParams": connectionParams,
 	})
 	openParams := fmt.Sprintf("%s %s", connectionParams, credentialsParams)
@@ -39,10 +45,11 @@ func newRedshiftClient(info RedshiftCredentials) (*RedshiftClient, error) {
 		return nil, err
 	}
 
-	return &RedshiftClient{session}, nil
+	return &redshiftClient{session}, nil
 }
 
-func NewRedshiftProdClient() (*RedshiftClient, error) {
+// NewRedshiftProdClient initializes a client to fresh prod
+func NewRedshiftProdClient() (RedshiftClient, error) {
 	info := RedshiftCredentials{
 		Host:     config.RedshiftProdHost,
 		Port:     config.RedshiftProdPort,
@@ -54,7 +61,8 @@ func NewRedshiftProdClient() (*RedshiftClient, error) {
 	return newRedshiftClient(info)
 }
 
-func NewRedshiftFastClient() (*RedshiftClient, error) {
+// NewRedshiftFastClient initializes a client to fast prod
+func NewRedshiftFastClient() (RedshiftClient, error) {
 	info := RedshiftCredentials{
 		Host:     config.RedshiftFastHost,
 		Port:     config.RedshiftFastPort,
@@ -66,19 +74,22 @@ func NewRedshiftFastClient() (*RedshiftClient, error) {
 	return newRedshiftClient(info)
 }
 
-// For testing
-func (c *RedshiftClient) CountRows(tablename string) (int64, error) {
-	query := fmt.Sprintf("Select count(*) from %s", tablename)
-	rows, err := c.session.Query(query)
+// QueryLatency returns the latency for a given table,
+// defined as the time difference in hours between now
+// and the most recent record in a table. Returns the latency,
+// if applicable, and whether or not the table contains rows
+func (c *redshiftClient) QueryLatency(timestampColumn, schemaName, tableName string) (int64, bool, error) {
+	latencyQuery := fmt.Sprintf("SELECT datediff(hour, max(%s), getdate()) FROM %s.%s",
+		timestampColumn, schemaName, tableName)
+	rows, err := c.session.Query(latencyQuery)
 	if err != nil {
-		return 0, err
+		return 0, false, err
 	}
 
-	var count sql.NullInt64
+	var latency sql.NullInt64
 	rows.Next()
-	if err := rows.Scan(&count); err != nil {
-		return 0, err
+	if err := rows.Scan(&latency); err != nil {
+		return 0, false, err
 	}
-
-	return count.Int64, nil
+	return latency.Int64, latency.Valid, nil
 }
