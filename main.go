@@ -24,6 +24,9 @@ var (
 
 func init() {
 	logger = l.GetLogger()
+
+	// kvconfig.yml must live in the same directory as
+	// the executable file in order for log routing to work
 	dir, err := osext.ExecutableFolder()
 	if err != nil {
 		log.Fatal(err)
@@ -32,6 +35,7 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	latencyConfigPath = path.Join(dir, "config/latency_config.json")
 }
 
@@ -61,7 +65,7 @@ func fatalIfErr(err error, title string) {
 	if err != nil {
 		logger.JobFinishedEvent(strings.Join(os.Args[1:], " "), false)
 		l.GetKVLogger().CriticalD(title, l.M{"error": err.Error()})
-		os.Exit(1)
+		panic("Encountered fatal error")
 	}
 }
 

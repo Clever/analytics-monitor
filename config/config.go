@@ -70,14 +70,14 @@ func ParseChecks(latencyConfigPath string) ClusterChecks {
 	latencyJSON, err := ioutil.ReadFile(latencyConfigPath)
 	if err != nil {
 		l.GetKVLogger().CriticalD("read-latency-config-error", l.M{"error": err.Error()})
-		os.Exit(1)
+		panic("Unable to read latency config")
 	}
 
 	var checks ClusterChecks
 	err = json.Unmarshal(latencyJSON, &checks)
 	if err != nil {
 		l.GetKVLogger().CriticalD("parse-latency-checks-error", l.M{"error": err.Error()})
-		os.Exit(1)
+		panic("Unable to parse latency checks")
 	}
 
 	return checks
