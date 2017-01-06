@@ -87,7 +87,7 @@ func TestPerformLatencyChecks(t *testing.T) {
 			queryErr:              nil,
 			threshold:             "2h",
 			expectedLogValue:      0,
-			expectedLatencyReport: "1",
+			expectedLatencyReport: "1h",
 		},
 		{
 			title:                 "logs a failure value (1) when latencyHrs > threshold",
@@ -96,7 +96,7 @@ func TestPerformLatencyChecks(t *testing.T) {
 			queryErr:              nil,
 			threshold:             "2h",
 			expectedLogValue:      1,
-			expectedLatencyReport: "3",
+			expectedLatencyReport: "3h",
 		},
 		{
 			title:                 "logs a failure value (1) when no rows exist",

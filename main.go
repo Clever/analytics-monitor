@@ -91,7 +91,7 @@ func performLatencyChecks(redshiftClient db.RedshiftClient, clusterConfig []conf
 				latencyErrValue = 1
 			}
 
-			reportedLatency := strconv.FormatInt(latencyHrs, 10)
+			reportedLatency := fmt.Sprintf("%sh", strconv.FormatInt(latencyHrs, 10))
 			if !hasRows {
 				reportedLatency = "N/A - no rows"
 			}
