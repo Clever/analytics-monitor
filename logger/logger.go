@@ -9,6 +9,7 @@ import (
 type Logger interface {
 	JobFinishedEvent(payload string, didSucceed bool)
 	CheckLatencyEvent(latencyErrValue int, fullTableName, reportedLatency, threshold string)
+	CheckLoadErrorEvent(loadErrValue int, loadErrors string)
 }
 
 // M is an alias for map[string]interface{} to make log lines less painful to write.
@@ -25,6 +26,9 @@ const (
 
 	// checkLatency refers to latency check results
 	checkLatency = "check-latency"
+
+	// checkLoadErrors refers to STL Load Errors results
+	checkLoadErrors = "check-load-errors"
 )
 
 var defaultLog logger
@@ -68,5 +72,14 @@ func (l *logger) CheckLatencyEvent(latencyErrValue int, fullTableName, reportedL
 		"table":             fullTableName,
 		"latency":           reportedLatency,
 		"latency_threshold": threshold,
+	})
+}
+
+// CheckLoadErrorEvent logs the results of a load error
+// to be log routed to SignalFx
+func (l *logger) CheckLoadErrorEvent(loadErrValue int, loadErrors string) {
+	l.log.GaugeIntD(checkLoadErrors, loadErrValue, M{
+		"table":  "stl_load_errors",
+		"errors": loadErrors,
 	})
 }

@@ -1,16 +1,16 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/kardianos/osext"
 	"log"
 	"os"
 	"path"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/kardianos/osext"
 
 	"github.com/Clever/analytics-pipeline-monitor/config"
 	"github.com/Clever/analytics-pipeline-monitor/db"
@@ -69,10 +69,22 @@ func fatalIfErr(err error, title string) {
 	}
 }
 
-// TODO (IP-1204): Perform STL_LOAD_ERRORS Latency Check
-// Doesn't need to return anything since Kayvee logging should be sufficient
 func performLoadErrorsCheck(redshiftClient db.RedshiftClient) {
-
+	loadErrors, err := redshiftClient.QuerySTLLoadErrors()
+	if err != nil {
+		fmt.Printf("Error with client performing load error check: %v.\n", err)
+	} else {
+		if loadErrors != nil && len(loadErrors) > 0 {
+			loadErrorsJSON, err := json.Marshal(loadErrors)
+			if err != nil {
+				fmt.Printf("Error: %s", err)
+			}
+			logger.CheckLoadErrorEvent(1, string(loadErrorsJSON))
+		} else {
+			//No load errors in past hour
+			logger.CheckLoadErrorEvent(0, "")
+		}
+	}
 }
 
 func performLatencyChecks(redshiftClient db.RedshiftClient, clusterConfig []config.SchemaChecks, clusterName string) {

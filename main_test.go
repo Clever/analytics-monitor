@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Clever/analytics-pipeline-monitor/config"
+	"github.com/Clever/analytics-pipeline-monitor/db"
 )
 
 // Copy kvconfig.yml to exec dir to simulate main.init()
@@ -36,16 +37,22 @@ type mockRedshiftClient struct {
 	latencyHrs int64
 	hasRows    bool
 	queryErr   error
+	loadErrs   []db.LoadError
 }
 
 func (c *mockRedshiftClient) QueryLatency(timestampColumn, schemaName, tableName string) (int64, bool, error) {
 	return c.latencyHrs, c.hasRows, c.queryErr
 }
 
+func (c *mockRedshiftClient) QuerySTLLoadErrors() ([]db.LoadError, error) {
+	return c.loadErrs, c.queryErr
+}
+
 type mockLogger struct {
 	assertions            *assert.Assertions
 	expectedLogValue      int
 	expectedLatencyReport string
+	expectedErrorsString  string
 }
 
 func (l *mockLogger) JobFinishedEvent(payload string, didSucceed bool) {
@@ -56,6 +63,11 @@ func (l *mockLogger) JobFinishedEvent(payload string, didSucceed bool) {
 func (l *mockLogger) CheckLatencyEvent(latencyErrValue int, fullTableName, reportedLatency, threshold string) {
 	l.assertions.Equal(latencyErrValue, l.expectedLogValue, "Incorrect latency log value")
 	l.assertions.Equal(reportedLatency, l.expectedLatencyReport, "Mismatched latency report string")
+}
+
+func (l *mockLogger) CheckLoadErrorEvent(loadErrValue int, loadErrors string) {
+	l.assertions.Equal(loadErrValue, l.expectedLogValue, "Incorrect latency log value")
+	l.assertions.Equal(loadErrors, l.expectedErrorsString, "Incorrect latency log value")
 }
 
 // TestPerformLatencyChecks tests the performLatencyChecks
@@ -161,5 +173,61 @@ func TestPerformLatencyChecks(t *testing.T) {
 		} else {
 			performLatencyChecks(mockRsClient, mockChecks, "mockClusterName")
 		}
+	}
+}
+
+// TestPerformLoadErrorsCheck tests the performLoadErrorsCheck
+// function, mocking out load error results and verifying
+// that the correct results are being logged
+func TestPerformLoadErrorsCheck(t *testing.T) {
+	assertions := assert.New(t)
+	var emptyErrors []db.LoadError
+	someErrors := append(emptyErrors, db.LoadError{
+		TableNames: "table1, table2",
+		ErrorCode:  123,
+		Count:      10})
+
+	tests := []struct {
+		title string
+
+		// Mocks out the results of QuerySTLLoadErrors
+		loadErrs []db.LoadError
+		queryErr error
+
+		// Specifies what we expect to log (or error)
+		expectedLogValue int
+		expectedErrors   string
+	}{
+		{
+			title:            "logs a success value (0) when there are no load errors",
+			loadErrs:         emptyErrors,
+			queryErr:         nil,
+			expectedLogValue: 0,
+			expectedErrors:   "",
+		},
+		{
+			title:            "logs a failure value (1) when there is at least one load error",
+			loadErrs:         someErrors,
+			queryErr:         nil,
+			expectedLogValue: 1,
+			expectedErrors:   "[{\"table_names\":\"table1, table2\",\"error_code\":123,\"count\":10}]",
+		},
+	}
+
+	for _, test := range tests {
+		t.Logf("Testing that performLoadErrorsCheck %s", test.title)
+
+		mockRsClient := &mockRedshiftClient{
+			queryErr: test.queryErr,
+			loadErrs: test.loadErrs,
+		}
+		mockLog := &mockLogger{
+			assertions:           assertions,
+			expectedLogValue:     test.expectedLogValue,
+			expectedErrorsString: test.expectedErrors,
+		}
+		logger = mockLog // Overrides package level logger
+
+		performLoadErrorsCheck(mockRsClient)
 	}
 }

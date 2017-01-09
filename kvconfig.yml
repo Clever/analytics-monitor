@@ -17,3 +17,12 @@ routes:
       dimensions: [ "table", "latency_threshold" ]
       value: "value"
       stat_type: "gauge"
+  check-load-errors:
+    matchers:
+      title: [ "check-load-errors" ]
+    output:
+      type: "alerts"
+      series: "apm.load_errors"
+      dimensions: [ "table" ]
+      value: "value"
+      stat_type: "counter"

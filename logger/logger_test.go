@@ -91,3 +91,39 @@ func TestCheckLatency(t *testing.T) {
 		assert.Equal(counts[test.rule], 1)
 	}
 }
+
+// TestCheckLoadErrors verifies that CheckLoadErrors
+// log routes to the 'check-load-errors' rule that
+// ultimately sends the log to SignalFx
+func TestCheckLoadError(t *testing.T) {
+	assert := assert.New(t)
+
+	tests := []struct {
+		rule     string
+		errValue int
+		errors   string
+	}{
+		{
+			rule:     "check-load-errors",
+			errValue: 1,
+			errors:   "Errors",
+		},
+		{
+			rule:     "check-load-errors",
+			errValue: 0,
+			errors:   "",
+		},
+	}
+
+	for _, test := range tests {
+		t.Logf("Routing rule %s", test.rule)
+
+		mocklog := kvLogger.NewMockCountLogger("analytics-pipeline-monitor")
+		defaultLog.log = mocklog // Overrides package level logger
+
+		defaultLog.CheckLoadErrorEvent(test.errValue, test.errors)
+		counts := mocklog.RuleCounts()
+
+		assert.Equal(counts[test.rule], 1)
+	}
+}

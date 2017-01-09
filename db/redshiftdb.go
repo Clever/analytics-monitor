@@ -12,6 +12,7 @@ import (
 // RedshiftClient exposes an interface for querying Redshift.
 type RedshiftClient interface {
 	QueryLatency(timestampColumn, schemaName, tableName string) (int64, bool, error)
+	QuerySTLLoadErrors() ([]LoadError, error)
 }
 
 // redshiftClient provides a default implementation of RedshiftClient
@@ -27,6 +28,12 @@ type RedshiftCredentials struct {
 	Username string
 	Password string
 	Database string
+}
+
+type LoadError struct {
+	TableNames string `json:"table_names"`
+	ErrorCode  int64  `json:"error_code"`
+	Count      int64  `json:"count"`
 }
 
 // NewRedshiftClient creates a Redshift db client.
@@ -92,4 +99,34 @@ func (c *redshiftClient) QueryLatency(timestampColumn, schemaName, tableName str
 		return 0, false, err
 	}
 	return latency.Int64, latency.Valid, nil
+}
+
+func (c *redshiftClient) QuerySTLLoadErrors() ([]LoadError, error) {
+	query := fmt.Sprintf(`
+		SELECT sum("count") AS count, err_code, listagg(name, ', ')
+    FROM (SELECT COUNT(stl.err_code) AS count, stl.err_code, stv.name 
+    FROM stl_load_errors AS stl 
+    INNER JOIN stv_tbl_perm AS stv ON stl.tbl = stv.id
+    WHERE starttime > (getdate() - INTERVAL '3 hour')
+    GROUP BY name, err_code) 
+    GROUP BY err_code
+   	`)
+
+	var loadErrors []LoadError
+	rows, err := c.session.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var row LoadError
+		if err := rows.Scan(&row.Count, &row.ErrorCode, &row.TableNames); err != nil {
+			return loadErrors, fmt.Errorf("Unable to scan row: %s", err)
+		} else {
+			loadErrors = append(loadErrors, row)
+		}
+	}
+
+	return loadErrors, nil
 }
