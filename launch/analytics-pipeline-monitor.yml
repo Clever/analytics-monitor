@@ -14,8 +14,8 @@ env:
 dependencies:
 - gearmand
 resources:
-  cpu: 0.1
-  max_mem: 0.1
+  cpu: 0.01
+  max_mem: 0.02
 shepherds:
 - "benji.stein@clever.com"
 expose: []
