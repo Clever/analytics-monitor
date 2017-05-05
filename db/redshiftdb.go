@@ -6,7 +6,9 @@ import (
 
 	"github.com/Clever/analytics-pipeline-monitor/config"
 	l "github.com/Clever/analytics-pipeline-monitor/logger"
-	_ "github.com/lib/pq" // Postgres driver.
+	// Use our own version of the postgres library so we get keep-alive support.
+	// See https://github.com/Clever/pq/pull/1
+	_ "github.com/Clever/pq"
 )
 
 // RedshiftClient exposes an interface for querying Redshift.
@@ -39,7 +41,7 @@ type LoadError struct {
 // NewRedshiftClient creates a Redshift db client.
 func newRedshiftClient(info RedshiftCredentials) (RedshiftClient, error) {
 	const connectionTimeout = 60
-	connectionParams := fmt.Sprintf("host=%s port=%s dbname=%s connect_timeout=%d",
+	connectionParams := fmt.Sprintf("host=%s port=%s dbname=%s keepalive=1 connect_timeout=%d",
 		info.Host, info.Port, info.Database, connectionTimeout)
 	credentialsParams := fmt.Sprintf("user=%s password=%s", info.Username, info.Password)
 
