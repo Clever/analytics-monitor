@@ -1,10 +1,12 @@
-hash: 5658410e9d649c7a5799842905048ad2ef6bdf76c0523cc2d16a359a24aeacc4
-updated: 2016-12-17T02:06:05.088154945Z
+hash: 000ed9fff985844febcfe17d9657dd0fe6bebada5d97178fdf1b6fe70abd3104
+updated: 2017-05-04T20:14:02.90706702-07:00
 imports:
+- name: github.com/Clever/pq
+  version: 615733e60b17935b5d162f72c2fa608abd8bdec4
 - name: github.com/kardianos/osext
-  version: c2c54e542fb797ad986b31721e1baedf214ca413
+  version: 9d302b58e975387d0b4d9be876622c86cefe64be
 - name: github.com/lib/pq
-  version: 50761b0867bd1d9d069276790bcd4a3bccf2324a
+  version: e182dc4027e2ded4b19396d638610f2653295f36
   subpackages:
   - oid
 - name: github.com/stretchr/testify
@@ -12,21 +14,21 @@ imports:
   subpackages:
   - assert
 - name: github.com/xeipuuv/gojsonpointer
-  version: e0fe6f68307607d540ed8eac07a342c33fa1b54a
+  version: 6fe8760cad3569743d51ddbb243b26f8456742dc
 - name: github.com/xeipuuv/gojsonreference
   version: e02fc20de94c78484cd5ffb007f8af96be030a45
 - name: github.com/xeipuuv/gojsonschema
-  version: 59f99ebfe5f712a0055e321231fc3be94e4e00b2
+  version: 20fdae500baa62c0de724a741df80b695c8ac756
 - name: gopkg.in/Clever/kayvee-go.v6
   version: fa278c9c7f83580b15c163c1efffe6fb4f2e3989
   subpackages:
   - logger
   - router
 - name: gopkg.in/yaml.v2
-  version: a5b47d31c556af34a302ce5d659e6fea44d90de0
+  version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
 testImports:
 - name: github.com/davecgh/go-spew
-  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
+  version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
   subpackages:
   - spew
 - name: github.com/pmezard/go-difflib
