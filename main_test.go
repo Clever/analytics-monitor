@@ -67,7 +67,7 @@ func (l *mockLogger) CheckLatencyEvent(latencyErrValue int, fullTableName, repor
 
 func (l *mockLogger) CheckLoadErrorEvent(loadErrValue int, loadErrors string) {
 	l.assertions.Equal(loadErrValue, l.expectedLogValue, "Incorrect latency log value")
-	l.assertions.Equal(loadErrors, l.expectedErrorsString, "Incorrect latency log value")
+	l.assertions.Equal(loadErrors, l.expectedErrorsString, "Mismatched load errors")
 }
 
 // TestPerformLatencyChecks tests the performLatencyChecks

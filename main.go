@@ -81,7 +81,7 @@ func performLoadErrorsCheck(redshiftClient db.RedshiftClient) {
 			}
 			logger.CheckLoadErrorEvent(1, string(loadErrorsJSON))
 		} else {
-			//No load errors in past hour
+			// No load errors in past hour
 			logger.CheckLoadErrorEvent(0, "")
 		}
 	}

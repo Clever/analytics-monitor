@@ -32,6 +32,7 @@ type RedshiftCredentials struct {
 	Database string
 }
 
+// LoadError contains information surfacing load errors
 type LoadError struct {
 	TableNames string `json:"table_names"`
 	ErrorCode  int64  `json:"error_code"`
@@ -106,13 +107,13 @@ func (c *redshiftClient) QueryLatency(timestampColumn, schemaName, tableName str
 func (c *redshiftClient) QuerySTLLoadErrors() ([]LoadError, error) {
 	query := fmt.Sprintf(`
 		SELECT sum("count") AS count, err_code, listagg(name, ', ')
-    FROM (SELECT COUNT(stl.err_code) AS count, stl.err_code, stv.name 
-    FROM stl_load_errors AS stl 
+    FROM (SELECT COUNT(stl.err_code) AS count, stl.err_code, stv.name
+    FROM stl_load_errors AS stl
     INNER JOIN stv_tbl_perm AS stv ON stl.tbl = stv.id
     WHERE starttime > (getdate() - INTERVAL '3 hour')
-    GROUP BY name, err_code) 
+    GROUP BY name, err_code)
     GROUP BY err_code
-   	`)
+  `)
 
 	var loadErrors []LoadError
 	rows, err := c.session.Query(query)
@@ -125,9 +126,9 @@ func (c *redshiftClient) QuerySTLLoadErrors() ([]LoadError, error) {
 		var row LoadError
 		if err := rows.Scan(&row.Count, &row.ErrorCode, &row.TableNames); err != nil {
 			return loadErrors, fmt.Errorf("Unable to scan row: %s", err)
-		} else {
-			loadErrors = append(loadErrors, row)
 		}
+
+		loadErrors = append(loadErrors, row)
 	}
 
 	return loadErrors, nil
