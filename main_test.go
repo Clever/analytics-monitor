@@ -34,10 +34,19 @@ var _ = func() (_ struct{}) {
 }()
 
 type mockRedshiftClient struct {
-	latencyHrs int64
-	hasRows    bool
-	queryErr   error
-	loadErrs   []db.LoadError
+	latencyHrs    int64
+	hasRows       bool
+	queryErr      error
+	loadErrs      []db.LoadError
+	tableMetadata map[string]db.TableMetadata
+}
+
+func (c *mockRedshiftClient) GetClusterName() string {
+	return "mockClusterName"
+}
+
+func (c *mockRedshiftClient) QueryTableMetadata(schemaName string) (map[string]db.TableMetadata, error) {
+	return c.tableMetadata, c.queryErr
 }
 
 func (c *mockRedshiftClient) QueryLatency(timestampColumn, schemaName, tableName string) (int64, bool, error) {
@@ -67,7 +76,7 @@ func (l *mockLogger) CheckLatencyEvent(latencyErrValue int, fullTableName, repor
 
 func (l *mockLogger) CheckLoadErrorEvent(loadErrValue int, loadErrors string) {
 	l.assertions.Equal(loadErrValue, l.expectedLogValue, "Incorrect latency log value")
-	l.assertions.Equal(loadErrors, l.expectedErrorsString, "Incorrect latency log value")
+	l.assertions.Equal(loadErrors, l.expectedErrorsString, "Mismatched load errors")
 }
 
 // TestPerformLatencyChecks tests the performLatencyChecks
@@ -88,9 +97,10 @@ func TestPerformLatencyChecks(t *testing.T) {
 		threshold string
 
 		// Specifies what we expect to log (or error)
-		expectedLogValue      int
-		expectedLatencyReport string
-		expectedPanic         bool
+		expectedLogValue       int
+		expectedLatencyReport  string
+		expectedPanic          bool
+		expectedErrorsReturned bool
 	}{
 		{
 			title:                 "logs a success value (0) when latencyHrs <= threshold",
@@ -128,12 +138,12 @@ func TestPerformLatencyChecks(t *testing.T) {
 			expectedPanic: true,
 		},
 		{
-			title:         "panics when latency query errors out",
-			latencyHrs:    0,
-			hasRows:       false,
-			queryErr:      errors.New("Data Warehouse out of space - s/Redshift/Blueshift"),
-			threshold:     "2h",
-			expectedPanic: true,
+			title:                  "panics when latency query errors out",
+			latencyHrs:             0,
+			hasRows:                false,
+			queryErr:               errors.New("Data Warehouse out of space - s/Redshift/Blueshift"),
+			threshold:              "2h",
+			expectedErrorsReturned: true,
 		},
 	}
 
@@ -151,27 +161,26 @@ func TestPerformLatencyChecks(t *testing.T) {
 			expectedLatencyReport: test.expectedLatencyReport,
 		}
 		logger = mockLog // Overrides package level logger
-		mockChecks := []config.SchemaChecks{
-			config.SchemaChecks{
-				SchemaName: "mockSchemaName",
-				Checks: []config.TableChecks{
-					config.TableChecks{
-						TableName: "mockTableName",
-						Latency: config.LatencyInfo{
-							TimestampColumn: "mockColumn",
-							Threshold:       test.threshold,
-						},
-					},
-				},
+
+		mockChecks := make(Checks)
+		mockChecks["mockSchemaName"] = make(map[string]config.TableCheck)
+		mockChecks["mockSchemaName"]["mockTableName"] = config.TableCheck{
+			TableName: "mockTableName",
+			Latency: config.LatencyInfo{
+				TimestampColumn: "mockColumn",
+				Threshold:       test.threshold,
 			},
 		}
 
 		if test.expectedPanic {
 			assert.Panics(t, func() {
-				performLatencyChecks(mockRsClient, mockChecks, "mockClusterName")
+				performLatencyChecks(mockRsClient, mockChecks)
 			}, "Doesn't error when expected")
 		} else {
-			performLatencyChecks(mockRsClient, mockChecks, "mockClusterName")
+			errors := performLatencyChecks(mockRsClient, mockChecks)
+			if test.expectedErrorsReturned {
+				assertions.True(len(errors) > 0, "Didn't return errors when expected")
+			}
 		}
 	}
 }

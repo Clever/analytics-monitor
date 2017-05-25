@@ -26,25 +26,29 @@ var (
 	RedshiftFastPassword string
 )
 
-// ClusterChecks stores latency checks by cluster
-type ClusterChecks struct {
-	ProdChecks     []SchemaChecks `json:"prod"`
-	FastProdChecks []SchemaChecks `json:"fast-prod"`
+// Config configures latency checks by cluster
+type Config struct {
+	ProdChecks     []SchemaConfig `json:"prod"`
+	FastProdChecks []SchemaConfig `json:"fast-prod"`
 }
 
-// SchemaChecks stores an array of checks by schema
-type SchemaChecks struct {
-	SchemaName string        `json:"schema"`
-	Checks     []TableChecks `json:"checks"`
+// SchemaConfig configures latency checks by schema
+type SchemaConfig struct {
+	SchemaName             string       `json:"schema"`
+	DefaultThreshold       string       `json:"default_threshold"`
+	DefaultTimestampColumn string       `json:"default_timestamp_column"`
+	TablesToOmit           []string     `json:"omit_tables"`
+	Checks                 []TableCheck `json:"checks"`
 }
 
-// TableChecks stores checks per view or table
-type TableChecks struct {
+// TableCheck configures a single latency check for a table
+type TableCheck struct {
 	TableName string      `json:"table"`
 	Latency   LatencyInfo `json:"latency"`
 }
 
 // LatencyInfo stores information for a latency check
+// `threshold` expects a string formatted Golang duration
 type LatencyInfo struct {
 	TimestampColumn string `json:"timestamp_column"`
 	Threshold       string `json:"threshold"`
@@ -66,14 +70,14 @@ func Parse() {
 }
 
 // ParseChecks reads in the latency check definitions
-func ParseChecks(latencyConfigPath string) ClusterChecks {
+func ParseChecks(latencyConfigPath string) Config {
 	latencyJSON, err := ioutil.ReadFile(latencyConfigPath)
 	if err != nil {
 		l.GetKVLogger().CriticalD("read-latency-config-error", l.M{"error": err.Error()})
 		panic("Unable to read latency config")
 	}
 
-	var checks ClusterChecks
+	var checks Config
 	err = json.Unmarshal(latencyJSON, &checks)
 	if err != nil {
 		l.GetKVLogger().CriticalD("parse-latency-checks-error", l.M{"error": err.Error()})
