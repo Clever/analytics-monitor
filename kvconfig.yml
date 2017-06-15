@@ -13,10 +13,10 @@ routes:
       title: [ "check-latency" ]
     output:
       type: "alerts"
-      series: "apm.latency"
+      series: "apm.latency-exceeded"
       dimensions: [ "table", "latency_threshold" ]
       value: "value"
-      stat_type: "gauge"
+      stat_type: "counter"
   check-load-errors:
     matchers:
       title: [ "check-load-errors" ]
