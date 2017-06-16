@@ -1,5 +1,5 @@
-hash: 000ed9fff985844febcfe17d9657dd0fe6bebada5d97178fdf1b6fe70abd3104
-updated: 2017-05-04T20:14:02.90706702-07:00
+hash: 0b4f32e23aab4250e4370e2a78c0d7241c357eca04afd0050676a388f9bfe8e9
+updated: 2017-06-16T17:51:58.772193027Z
 imports:
 - name: github.com/Clever/pq
   version: 615733e60b17935b5d162f72c2fa608abd8bdec4
@@ -20,7 +20,7 @@ imports:
 - name: github.com/xeipuuv/gojsonschema
   version: 20fdae500baa62c0de724a741df80b695c8ac756
 - name: gopkg.in/Clever/kayvee-go.v6
-  version: fa278c9c7f83580b15c163c1efffe6fb4f2e3989
+  version: 096364e316a52652d3493be702d8105d8d01db84
   subpackages:
   - logger
   - router
@@ -28,7 +28,7 @@ imports:
   version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
 testImports:
 - name: github.com/davecgh/go-spew
-  version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
+  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
   subpackages:
   - spew
 - name: github.com/pmezard/go-difflib
