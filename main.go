@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/kardianos/osext"
 	"log"
 	"os"
 	"path"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/kardianos/osext"
 
 	"github.com/Clever/analytics-pipeline-monitor/config"
 	"github.com/Clever/analytics-pipeline-monitor/db"
@@ -70,12 +71,14 @@ func main() {
 
 	queryLatencyErrors := append(prodErrors, fastProdErrors...)
 	if len(queryLatencyErrors) > 0 {
+		var errStrs []string
 		for _, latencyErr := range queryLatencyErrors {
 			l.GetKVLogger().CriticalD("query-latency-error", l.M{"errors": latencyErr.Error()})
+			errStrs = append(errStrs, latencyErr.Error())
 		}
 
 		logger.JobFinishedEvent(strings.Join(os.Args[1:], " "), false)
-		panic("Encountered fatal error querying for latency. See query-latency-error logs.")
+		log.Fatalf("Encountered fatal error querying for latency: %s", strings.Join(errStrs, ","))
 	}
 }
 
@@ -84,7 +87,7 @@ func fatalIfErr(err error, title string) {
 	if err != nil {
 		logger.JobFinishedEvent(strings.Join(os.Args[1:], " "), false)
 		l.GetKVLogger().CriticalD(title, l.M{"error": err.Error()})
-		panic("Encountered fatal error")
+		panic(fmt.Sprintf("Encountered fatal error: %s", err.Error()))
 	}
 }
 
