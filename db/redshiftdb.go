@@ -160,6 +160,7 @@ func (c *redshiftClient) QuerySTLLoadErrors() ([]LoadError, error) {
     FROM stl_load_errors AS stl
     INNER JOIN stv_tbl_perm AS stv ON stl.tbl = stv.id
     WHERE starttime > (getdate() - INTERVAL '3 hour')
+        AND filename not like 's3://firehose-prod/github-events%%'
     GROUP BY name, err_code)
     GROUP BY err_code
   `)
