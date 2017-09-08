@@ -1,7 +1,7 @@
 FROM debian:jessie
 RUN apt-get -y update && \
     apt-get install -y curl && \
-    curl -L https://github.com/Clever/gearcmd/releases/download/0.8.6/gearcmd-v0.8.6-linux-amd64.tar.gz | tar xz -C /usr/local/bin --strip-components 1
+    curl -L https://github.com/Clever/gearcmd/releases/download/0.8.7/gearcmd-v0.8.7-linux-amd64.tar.gz | tar xz -C /usr/local/bin --strip-components 1
 
 COPY bin/analytics-pipeline-monitor /usr/bin/analytics-pipeline-monitor
 COPY config/latency_config.json /usr/bin/config/latency_config.json
