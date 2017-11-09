@@ -8,7 +8,7 @@ EXECUTABLE = $(shell basename $(PKG))
 
 .PHONY: test $(PKGS) run clean vendor
 
-$(eval $(call golang-version-check,1.8))
+$(eval $(call golang-version-check,1.9))
 
 all: test build
 
@@ -27,8 +27,8 @@ $(PKGS): golang-test-all-deps
 	$(call golang-test-all,$@)
 
 
-$(GOPATH)/bin/glide:
-	@go get github.com/Masterminds/glide
 
-install_deps: $(GOPATH)/bin/glide
-	@$(GOPATH)/bin/glide install
+
+
+install_deps: golang-dep-vendor-deps
+	$(call golang-dep-vendor)
