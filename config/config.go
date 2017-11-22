@@ -28,8 +28,8 @@ var (
 
 // Config configures latency checks by cluster
 type Config struct {
-	ProdChecks     []SchemaConfig `json:"prod"`
-	FastProdChecks []SchemaConfig `json:"fast-prod"`
+	RedshiftProdChecks []SchemaConfig `json:"redshift-prod"`
+	RedshiftFastChecks []SchemaConfig `json:"redshift-fast"`
 }
 
 // SchemaConfig configures latency checks by schema
@@ -56,17 +56,17 @@ type LatencyInfo struct {
 
 // Parse reads environment variables and initializes the config.
 func Parse() {
-	RedshiftProdHost = requiredEnv("PG_HOST")
-	RedshiftProdPort = requiredEnv("PG_PORT")
-	RedshiftProdDatabase = requiredEnv("PG_DATABASE")
-	RedshiftProdUsername = requiredEnv("PG_USER")
-	RedshiftProdPassword = requiredEnv("PG_PASSWORD")
+	RedshiftProdHost = requiredEnv("REDSHIFT_PROD_HOST")
+	RedshiftProdPort = requiredEnv("REDSHIFT_PROD_PORT")
+	RedshiftProdDatabase = requiredEnv("REDSHIFT_PROD_DATABASE")
+	RedshiftProdUsername = requiredEnv("REDSHIFT_PROD_USER")
+	RedshiftProdPassword = requiredEnv("REDSHIFT_PROD_PASSWORD")
 
-	RedshiftFastHost = requiredEnv("FAST_PG_HOST")
-	RedshiftFastPort = requiredEnv("FAST_PG_PORT")
-	RedshiftFastDatabase = requiredEnv("FAST_PG_DATABASE")
-	RedshiftFastUsername = requiredEnv("FAST_PG_USER")
-	RedshiftFastPassword = requiredEnv("FAST_PG_PASSWORD")
+	RedshiftFastHost = requiredEnv("REDSHIFT_FAST_HOST")
+	RedshiftFastPort = requiredEnv("REDSHIFT_FAST_PORT")
+	RedshiftFastDatabase = requiredEnv("REDSHIFT_FAST_DATABASE")
+	RedshiftFastUsername = requiredEnv("REDSHIFT_FAST_USER")
+	RedshiftFastPassword = requiredEnv("REDSHIFT_FAST_PASSWORD")
 }
 
 // ParseChecks reads in the latency check definitions
