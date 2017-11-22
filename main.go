@@ -58,18 +58,32 @@ func main() {
 	redshiftFastConnection, err := db.NewRedshiftFastClient()
 	fatalIfErr(err, "redshift-fast-failed-init")
 
+	rdsInternalConnection, err := db.NewRDSInternalClient()
+	fatalIfErr(err, "rds-internal-failed-init")
+
+	rdsExternalConnection, err := db.NewRDSExternalClient()
+	fatalIfErr(err, "rds-external-failed-init")
+
 	configChecks := config.ParseChecks(latencyConfigPath)
 
 	redshiftProdChecks := buildLatencyChecks(configChecks.RedshiftProdChecks, redshiftProdConnection)
 	redshiftFastChecks := buildLatencyChecks(configChecks.RedshiftFastChecks, redshiftFastConnection)
+	rdsInternalChecks := buildLatencyChecks(configChecks.RDSInternalChecks, rdsInternalConnection)
+	rdsExternalChecks := buildLatencyChecks(configChecks.RDSExternalChecks, rdsExternalConnection)
 
 	redshiftProdErrors := performLatencyChecks(redshiftProdConnection, redshiftProdChecks)
 	redshiftFastErrors := performLatencyChecks(redshiftFastConnection, redshiftFastChecks)
+	rdsInternalErrors := performLatencyChecks(rdsInternalConnection, rdsInternalChecks)
+	rdsExternalErrors := performLatencyChecks(rdsExternalConnection, rdsExternalChecks)
 
 	performLoadErrorsCheck(redshiftProdConnection)
 	performLoadErrorsCheck(redshiftFastConnection)
+	performLoadErrorsCheck(rdsInternalConnection)
+	performLoadErrorsCheck(rdsExternalConnection)
 
-	queryLatencyErrors := append(redshiftProdErrors, redshiftFastErrors...)
+	redshiftLatencyErrors := append(redshiftProdErrors, redshiftFastErrors...)
+	rdsLatencyErrors := append(rdsInternalErrors, rdsExternalErrors...)
+	queryLatencyErrors := append(redshiftLatencyErrors, rdsLatencyErrors...)
 	if len(queryLatencyErrors) > 0 {
 		var errStrs []string
 		for _, latencyErr := range queryLatencyErrors {

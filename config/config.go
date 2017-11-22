@@ -9,8 +9,9 @@ import (
 )
 
 var (
-	// We have two redshift databases, one that holds all the data and views (prod)
-	// and one that holds a small number of faster, materialized views. (fast-prod)
+	// We have two redshift databases:
+	// One that holds all the data and views (prod)
+	// And one that holds a small number of faster, materialized views. (fast-prod)
 	// RedshiftProd* is for the former
 	RedshiftProdHost     string
 	RedshiftProdPort     string
@@ -24,12 +25,31 @@ var (
 	RedshiftFastDatabase string
 	RedshiftFastUsername string
 	RedshiftFastPassword string
+
+	// We also have two postgres Amazon RDS databases.
+	// One that's for internal use (e..g building blocks)
+	// And one that's for external use (e.g. district analytics.)
+	// RDSInternal* is the former
+	RDSInternalHost     string
+	RDSInternalPort     string
+	RDSInternalDatabase string
+	RDSInternalUsername string
+	RDSInternalPassword string
+
+	// RDSExternal* is the former
+	RDSExternalHost     string
+	RDSExternalPort     string
+	RDSExternalDatabase string
+	RDSExternalUsername string
+	RDSExternalPassword string
 )
 
 // Config configures latency checks by cluster
 type Config struct {
 	RedshiftProdChecks []SchemaConfig `json:"redshift-prod"`
 	RedshiftFastChecks []SchemaConfig `json:"redshift-fast"`
+	RDSInternalChecks  []SchemaConfig `json:"rds-internal"`
+	RDSExternalChecks  []SchemaConfig `json:"rds-external"`
 }
 
 // SchemaConfig configures latency checks by schema
@@ -67,6 +87,18 @@ func Parse() {
 	RedshiftFastDatabase = requiredEnv("REDSHIFT_FAST_DATABASE")
 	RedshiftFastUsername = requiredEnv("REDSHIFT_FAST_USER")
 	RedshiftFastPassword = requiredEnv("REDSHIFT_FAST_PASSWORD")
+
+	RDSInternalHost = requiredEnv("RDS_INTERNAL_HOST")
+	RDSInternalPort = requiredEnv("RDS_INTERNAL_PORT")
+	RDSInternalDatabase = requiredEnv("RDS_INTERNAL_DATABASE")
+	RDSInternalUsername = requiredEnv("RDS_INTERNAL_USER")
+	RDSInternalPassword = requiredEnv("RDS_INTERNAL_PASSWORD")
+
+	RDSExternalHost = requiredEnv("RDS_EXTERNAL_HOST")
+	RDSExternalPort = requiredEnv("RDS_EXTERNAL_PORT")
+	RDSExternalDatabase = requiredEnv("RDS_EXTERNAL_DATABASE")
+	RDSExternalUsername = requiredEnv("RDS_EXTERNAL_USER")
+	RDSExternalPassword = requiredEnv("RDS_EXTERNAL_PASSWORD")
 }
 
 // ParseChecks reads in the latency check definitions

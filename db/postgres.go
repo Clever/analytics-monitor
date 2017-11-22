@@ -26,7 +26,7 @@ type postgresClient struct {
 	clusterName string
 }
 
-// PostgresCredentials contains the postgres credentials/informatio.
+// PostgresCredentials contains the postgres credentials/information.
 type PostgresCredentials struct {
 	Host     string
 	Port     string
@@ -91,6 +91,32 @@ func NewRedshiftFastClient() (PostgresClient, error) {
 	}
 
 	return newPostgresClient(info, "redshift-fast")
+}
+
+// NewRDSInternalClient initializes a client to internal rds
+func NewRDSInternalClient() (PostgresClient, error) {
+	info := PostgresCredentials{
+		Host:     config.RDSInternalHost,
+		Port:     config.RDSInternalPort,
+		Username: config.RDSInternalUsername,
+		Password: config.RDSInternalPassword,
+		Database: config.RDSInternalDatabase,
+	}
+
+	return newPostgresClient(info, "rds-internal")
+}
+
+// NewRDSExternalClient initializes a client to external rds
+func NewRDSExternalClient() (PostgresClient, error) {
+	info := PostgresCredentials{
+		Host:     config.RDSExternalHost,
+		Port:     config.RDSExternalPort,
+		Username: config.RDSExternalUsername,
+		Password: config.RDSExternalPassword,
+		Database: config.RDSExternalDatabase,
+	}
+
+	return newPostgresClient(info, "rds-external")
 }
 
 // GetClusterName returns the name of the client Postgres cluster
