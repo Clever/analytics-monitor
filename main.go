@@ -52,24 +52,38 @@ func main() {
 
 	defer logger.JobFinishedEvent(strings.Join(os.Args[1:], " "), true)
 
-	prodConnection, err := db.NewRedshiftProdClient()
+	redshiftProdConnection, err := db.NewRedshiftProdClient()
 	fatalIfErr(err, "redshift-prod-failed-init")
 
-	fastConnection, err := db.NewRedshiftFastClient()
+	redshiftFastConnection, err := db.NewRedshiftFastClient()
 	fatalIfErr(err, "redshift-fast-failed-init")
+
+	rdsInternalConnection, err := db.NewRDSInternalClient()
+	fatalIfErr(err, "rds-internal-failed-init")
+
+	rdsExternalConnection, err := db.NewRDSExternalClient()
+	fatalIfErr(err, "rds-external-failed-init")
 
 	configChecks := config.ParseChecks(latencyConfigPath)
 
-	prodChecks := buildLatencyChecks(configChecks.ProdChecks, prodConnection)
-	fastProdChecks := buildLatencyChecks(configChecks.FastProdChecks, fastConnection)
+	redshiftProdChecks := buildLatencyChecks(configChecks.RedshiftProdChecks, redshiftProdConnection)
+	redshiftFastChecks := buildLatencyChecks(configChecks.RedshiftFastChecks, redshiftFastConnection)
+	rdsInternalChecks := buildLatencyChecks(configChecks.RDSInternalChecks, rdsInternalConnection)
+	rdsExternalChecks := buildLatencyChecks(configChecks.RDSExternalChecks, rdsExternalConnection)
 
-	prodErrors := performLatencyChecks(prodConnection, prodChecks)
-	fastProdErrors := performLatencyChecks(fastConnection, fastProdChecks)
+	redshiftProdErrors := performLatencyChecks(redshiftProdConnection, redshiftProdChecks)
+	redshiftFastErrors := performLatencyChecks(redshiftFastConnection, redshiftFastChecks)
+	rdsInternalErrors := performLatencyChecks(rdsInternalConnection, rdsInternalChecks)
+	rdsExternalErrors := performLatencyChecks(rdsExternalConnection, rdsExternalChecks)
 
-	performLoadErrorsCheck(prodConnection)
-	performLoadErrorsCheck(fastConnection)
+	performLoadErrorsCheck(redshiftProdConnection)
+	performLoadErrorsCheck(redshiftFastConnection)
+	performLoadErrorsCheck(rdsInternalConnection)
+	performLoadErrorsCheck(rdsExternalConnection)
 
-	queryLatencyErrors := append(prodErrors, fastProdErrors...)
+	redshiftLatencyErrors := append(redshiftProdErrors, redshiftFastErrors...)
+	rdsLatencyErrors := append(rdsInternalErrors, rdsExternalErrors...)
+	queryLatencyErrors := append(redshiftLatencyErrors, rdsLatencyErrors...)
 	if len(queryLatencyErrors) > 0 {
 		var errStrs []string
 		for _, latencyErr := range queryLatencyErrors {
@@ -91,7 +105,7 @@ func fatalIfErr(err error, title string) {
 	}
 }
 
-// buildLatencyChecks constructs the latency checks for a given Redshift instance
+// buildLatencyChecks constructs the latency checks for a given postgres instance
 // Each check can either be declared explicitly (by specifying table latency
 // in schemaConfigs), or implicitly (by falling back on the default latency
 // values specified at the schema level).
@@ -101,14 +115,14 @@ func fatalIfErr(err error, title string) {
 // Each check (see: config.TableCheck) contains:
 // A.) Latency threshold as a duration string
 // B.) Name of the timestamp column
-func buildLatencyChecks(schemaConfigs []config.SchemaConfig, redshiftClient db.RedshiftClient) Checks {
+func buildLatencyChecks(schemaConfigs []config.SchemaConfig, postgresClient db.PostgresClient) Checks {
 	checks := make(Checks)
 
 	for _, schemaConfig := range schemaConfigs {
 		schemaName := schemaConfig.SchemaName
 		checks[schemaName] = make(map[string]config.TableCheck)
 
-		tableMetadata, err := redshiftClient.QueryTableMetadata(schemaName)
+		tableMetadata, err := postgresClient.QueryTableMetadata(schemaName)
 		if err != nil {
 			l.GetKVLogger().CriticalD("query-table-metadata-error", l.M{"error": err.Error()})
 			panic("Unable to query table metadata")
@@ -171,8 +185,8 @@ func buildLatencyChecks(schemaConfigs []config.SchemaConfig, redshiftClient db.R
 	return checks
 }
 
-func performLoadErrorsCheck(redshiftClient db.RedshiftClient) {
-	loadErrors, err := redshiftClient.QuerySTLLoadErrors()
+func performLoadErrorsCheck(postgresClient db.PostgresClient) {
+	loadErrors, err := postgresClient.QuerySTLLoadErrors()
 	if err != nil {
 		fmt.Printf("Error with client performing load error check: %v.\n", err)
 	} else {
@@ -189,16 +203,16 @@ func performLoadErrorsCheck(redshiftClient db.RedshiftClient) {
 	}
 }
 
-func performLatencyChecks(redshiftClient db.RedshiftClient, checks Checks) []error {
+func performLatencyChecks(postgresClient db.PostgresClient, checks Checks) []error {
 	var queryLatencyErrors []error
-	clusterName := redshiftClient.GetClusterName()
+	clusterName := postgresClient.GetClusterName()
 
 	for schemaName, tableChecks := range checks {
 		for tableName, check := range tableChecks {
 			threshold, err := time.ParseDuration(check.Latency.Threshold)
 			fatalIfErr(err, "parse-duration-error")
 
-			latencyHrs, hasRows, err := redshiftClient.QueryLatency(check.Latency.TimestampColumn,
+			latencyHrs, hasRows, err := postgresClient.QueryLatency(check.Latency.TimestampColumn,
 				schemaName, tableName)
 			if err != nil {
 				queryLatencyErrors = append(queryLatencyErrors, err)

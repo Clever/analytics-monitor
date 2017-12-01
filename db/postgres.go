@@ -11,23 +11,23 @@ import (
 	_ "github.com/Clever/pq"
 )
 
-// RedshiftClient exposes an interface for querying Redshift.
-type RedshiftClient interface {
+// PostgresClient exposes an interface for querying Postgres.
+type PostgresClient interface {
 	GetClusterName() string
 	QueryTableMetadata(schemaName string) (map[string]TableMetadata, error)
 	QueryLatency(timestampColumn, schemaName, tableName string) (int64, bool, error)
 	QuerySTLLoadErrors() ([]LoadError, error)
 }
 
-// redshiftClient provides a default implementation of RedshiftClient
-// that contains the redshift client connection.
-type redshiftClient struct {
+// postgresClient provides a default implementation of PostgresClient
+// that contains the postgres client connection.
+type postgresClient struct {
 	session     *sql.DB
 	clusterName string
 }
 
-// RedshiftCredentials contains the redshift credentials/informatio.
-type RedshiftCredentials struct {
+// PostgresCredentials contains the postgres credentials/information.
+type PostgresCredentials struct {
 	Host     string
 	Port     string
 	Username string
@@ -35,7 +35,7 @@ type RedshiftCredentials struct {
 	Database string
 }
 
-// TableMetadata contains information about a table in Redshift
+// TableMetadata contains information about a table in Postgres
 type TableMetadata struct {
 	TableName       string
 	TimestampColumn string
@@ -48,14 +48,14 @@ type LoadError struct {
 	Count      int64  `json:"count"`
 }
 
-// NewRedshiftClient creates a Redshift db client.
-func newRedshiftClient(info RedshiftCredentials, clusterName string) (RedshiftClient, error) {
+// NewPostgresClient creates a Postgres db client.
+func newPostgresClient(info PostgresCredentials, clusterName string) (PostgresClient, error) {
 	const connectionTimeout = 60
 	connectionParams := fmt.Sprintf("host=%s port=%s dbname=%s keepalive=1 connect_timeout=%d",
 		info.Host, info.Port, info.Database, connectionTimeout)
 	credentialsParams := fmt.Sprintf("user=%s password=%s", info.Username, info.Password)
 
-	l.GetKVLogger().InfoD("New-redshift-client", l.M{
+	l.GetKVLogger().InfoD("New-postgres-client", l.M{
 		"connectionParams": connectionParams,
 	})
 	openParams := fmt.Sprintf("%s %s", connectionParams, credentialsParams)
@@ -64,12 +64,12 @@ func newRedshiftClient(info RedshiftCredentials, clusterName string) (RedshiftCl
 		return nil, err
 	}
 
-	return &redshiftClient{session, clusterName}, nil
+	return &postgresClient{session, clusterName}, nil
 }
 
 // NewRedshiftProdClient initializes a client to fresh prod
-func NewRedshiftProdClient() (RedshiftClient, error) {
-	info := RedshiftCredentials{
+func NewRedshiftProdClient() (PostgresClient, error) {
+	info := PostgresCredentials{
 		Host:     config.RedshiftProdHost,
 		Port:     config.RedshiftProdPort,
 		Username: config.RedshiftProdUsername,
@@ -77,12 +77,12 @@ func NewRedshiftProdClient() (RedshiftClient, error) {
 		Database: config.RedshiftProdDatabase,
 	}
 
-	return newRedshiftClient(info, "prod")
+	return newPostgresClient(info, "redshift-prod")
 }
 
 // NewRedshiftFastClient initializes a client to fast prod
-func NewRedshiftFastClient() (RedshiftClient, error) {
-	info := RedshiftCredentials{
+func NewRedshiftFastClient() (PostgresClient, error) {
+	info := PostgresCredentials{
 		Host:     config.RedshiftFastHost,
 		Port:     config.RedshiftFastPort,
 		Username: config.RedshiftFastUsername,
@@ -90,22 +90,48 @@ func NewRedshiftFastClient() (RedshiftClient, error) {
 		Database: config.RedshiftFastDatabase,
 	}
 
-	return newRedshiftClient(info, "fast-prod")
+	return newPostgresClient(info, "redshift-fast")
 }
 
-// GetClusterName returns the name of the client Redshift cluster
-func (c *redshiftClient) GetClusterName() string {
+// NewRDSInternalClient initializes a client to internal rds
+func NewRDSInternalClient() (PostgresClient, error) {
+	info := PostgresCredentials{
+		Host:     config.RDSInternalHost,
+		Port:     config.RDSInternalPort,
+		Username: config.RDSInternalUsername,
+		Password: config.RDSInternalPassword,
+		Database: config.RDSInternalDatabase,
+	}
+
+	return newPostgresClient(info, "rds-internal")
+}
+
+// NewRDSExternalClient initializes a client to external rds
+func NewRDSExternalClient() (PostgresClient, error) {
+	info := PostgresCredentials{
+		Host:     config.RDSExternalHost,
+		Port:     config.RDSExternalPort,
+		Username: config.RDSExternalUsername,
+		Password: config.RDSExternalPassword,
+		Database: config.RDSExternalDatabase,
+	}
+
+	return newPostgresClient(info, "rds-external")
+}
+
+// GetClusterName returns the name of the client Postgres cluster
+func (c *postgresClient) GetClusterName() string {
 	return c.clusterName
 }
 
 // QueryTableMetadata returns a map of tables
-// belonging to a given schema in Redshift, indexed
+// belonging to a given schema in Postgres, indexed
 // by table name.
 // It also attempts to infer the timestamp column, by
 // choosing the alphabetically lowest column with a
 // timestamp type. We use this as a heuristic since a
 // lot of our timestamp columns are prefixed with "_".
-func (c *redshiftClient) QueryTableMetadata(schemaName string) (map[string]TableMetadata, error) {
+func (c *postgresClient) QueryTableMetadata(schemaName string) (map[string]TableMetadata, error) {
 	query := fmt.Sprintf(`
 		SELECT table_name, min("column_name")
 		FROM information_schema.columns
@@ -137,7 +163,7 @@ func (c *redshiftClient) QueryTableMetadata(schemaName string) (map[string]Table
 // defined as the time difference in hours between now
 // and the most recent record in a table. Returns the latency,
 // if applicable, and whether or not the table contains rows
-func (c *redshiftClient) QueryLatency(timestampColumn, schemaName, tableName string) (int64, bool, error) {
+func (c *postgresClient) QueryLatency(timestampColumn, schemaName, tableName string) (int64, bool, error) {
 	latencyQuery := fmt.Sprintf("SELECT datediff(hour, max(\"%s\"), getdate()) FROM \"%s\".\"%s\"",
 		timestampColumn, schemaName, tableName)
 	rows, err := c.session.Query(latencyQuery)
@@ -153,7 +179,7 @@ func (c *redshiftClient) QueryLatency(timestampColumn, schemaName, tableName str
 	return latency.Int64, latency.Valid, nil
 }
 
-func (c *redshiftClient) QuerySTLLoadErrors() ([]LoadError, error) {
+func (c *postgresClient) QuerySTLLoadErrors() ([]LoadError, error) {
 	query := fmt.Sprintf(`
 		SELECT sum("count") AS count, err_code, listagg(name, ', ')
     FROM (SELECT COUNT(stl.err_code) AS count, stl.err_code, stv.name
