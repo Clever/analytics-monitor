@@ -10,8 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var loc, _ = time.LoadLocation("America/Los_Angeles")
-
 func setup(t *testing.T) *postgresClient {
 	conf := PostgresCredentials{
 		Host:     os.Getenv("POSTGRES_HOST"),
@@ -37,8 +35,8 @@ func setup(t *testing.T) *postgresClient {
 }
 
 func TestQueryLatency(t *testing.T) {
-	n := time.Now()
-	past := time.Date(n.Year(), n.Month(), n.Day(), n.Hour()-100, 0, 0, 0, loc)
+	n := time.Now().In(time.UTC)
+	past := time.Date(n.Year(), n.Month(), n.Day(), n.Hour()-96, 0, 0, 0, time.UTC)
 
 	db := setup(t)
 
@@ -53,7 +51,6 @@ func TestQueryLatency(t *testing.T) {
 	latency, valid, err = db.QueryLatency("time", "test", "latency")
 	assert.NoError(t, err)
 	assert.True(t, valid)
-	fmt.Printf("Latency: %d\n", latency)
 	// Give a little leeway for timing
-	assert.True(t, latency >= 99 && latency <= 101)
+	assert.True(t, latency >= 95 && latency <= 97)
 }
