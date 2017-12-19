@@ -53,6 +53,7 @@ func TestQueryLatency(t *testing.T) {
 	latency, valid, err = db.QueryLatency("time", "test", "latency")
 	assert.NoError(t, err)
 	assert.True(t, valid)
+	fmt.Printf("Latency: %d\n", latency)
 	// Give a little leeway for timing
 	assert.True(t, latency >= 99 && latency <= 101)
 }
