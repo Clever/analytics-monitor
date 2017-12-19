@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/Clever/analytics-pipeline-monitor/config"
 	l "github.com/Clever/analytics-pipeline-monitor/logger"
@@ -53,7 +54,13 @@ func newPostgresClient(info PostgresCredentials, clusterName string) (PostgresCl
 	const connectionTimeout = 60
 	connectionParams := fmt.Sprintf("host=%s port=%s dbname=%s keepalive=1 connect_timeout=%d",
 		info.Host, info.Port, info.Database, connectionTimeout)
-	credentialsParams := fmt.Sprintf("user=%s password=%s", info.Username, info.Password)
+	credentialsParams := ""
+	if len(info.Username) > 0 {
+		credentialsParams = fmt.Sprintf("user=%s password=%s", info.Username, info.Password)
+	} else {
+		// Locally we have to disable ssl mode
+		credentialsParams = "sslmode=disable"
+	}
 
 	l.GetKVLogger().InfoD("New-postgres-client", l.M{
 		"connectionParams": connectionParams,
@@ -164,19 +171,20 @@ func (c *postgresClient) QueryTableMetadata(schemaName string) (map[string]Table
 // and the most recent record in a table. Returns the latency,
 // if applicable, and whether or not the table contains rows
 func (c *postgresClient) QueryLatency(timestampColumn, schemaName, tableName string) (int64, bool, error) {
-	latencyQuery := fmt.Sprintf("SELECT datediff(hour, max(\"%s\"), getdate()) FROM \"%s\".\"%s\"",
-		timestampColumn, schemaName, tableName)
+	// We extract the epoch because it works in both Redshift and Postgres
+	latencyQuery := fmt.Sprintf("SELECT extract(epoch from MAX(\"%s\")) FROM \"%s\".\"%s\"", timestampColumn, schemaName, tableName)
 	rows, err := c.session.Query(latencyQuery)
 	if err != nil {
 		return 0, false, fmt.Errorf("Error executing query %s: %s", latencyQuery, err)
 	}
 
-	var latency sql.NullInt64
+	var latency sql.NullFloat64
 	rows.Next()
 	if err := rows.Scan(&latency); err != nil {
 		return 0, false, fmt.Errorf("Unable to scan row for query %s: %s", latencyQuery, err)
 	}
-	return latency.Int64, latency.Valid, nil
+	hourDiff := (time.Now().Unix() - int64(latency.Float64)) / 3600
+	return hourDiff, latency.Valid, nil
 }
 
 func (c *postgresClient) QuerySTLLoadErrors() ([]LoadError, error) {

@@ -10,6 +10,9 @@ EXECUTABLE = $(shell basename $(PKG))
 
 $(eval $(call golang-version-check,1.9))
 
+export POSTGRES_HOST=localhost
+export POSTGRES_PORT=5432
+
 all: test build
 
 test: $(PKGS)
