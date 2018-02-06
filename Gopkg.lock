@@ -3,12 +3,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/Clever/analytics-pipeline-monitor"
-  packages = ["config","db","logger"]
-  revision = "acf47927405c6b60977b3b901c1d88ff7e19fecc"
-
-[[projects]]
-  branch = "master"
   name = "github.com/Clever/pq"
   packages = ["."]
   revision = "615733e60b17935b5d162f72c2fa608abd8bdec4"
@@ -35,7 +29,7 @@
 
 [[projects]]
   name = "github.com/stretchr/testify"
-  packages = ["assert"]
+  packages = ["assert","require"]
   revision = "69483b4bd14f5845b5a1e55bca19e954e827f1d0"
   version = "v1.1.4"
 
@@ -70,6 +64,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2cd2be72bf50ee70d214363e0bb0d1636ec70184bca4009942950d2258b2d5ab"
+  inputs-digest = "65315b3f1474dbf0d0f6687a4dd31a6bd4b50b068fb7f4c0519d4d4e83336323"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -11,7 +11,7 @@ import (
 var (
 	// We have two redshift databases:
 	// One that holds all the data and views (prod)
-	// And one that holds a small number of faster, materialized views. (fast-prod)
+	// And one that holds timeline (fast-prod)
 	// RedshiftProd* is for the former
 	RedshiftProdHost     string
 	RedshiftProdPort     string
