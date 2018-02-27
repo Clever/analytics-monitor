@@ -171,7 +171,7 @@ func buildLatencyChecks(schemaConfigs []config.SchemaConfig, postgresClient db.P
 		// Finally, omit latency checks for specified tables
 		for _, tableToOmit := range schemaConfig.TablesToOmit {
 			if _, ok := checks[schemaName][tableToOmit]; ok {
-				fmt.Printf("Omitting latency check for %s.%s", schemaName, tableToOmit)
+				log.Printf("Omitting latency check for %s.%s", schemaName, tableToOmit)
 				delete(checks[schemaName], tableToOmit)
 			} else {
 				l.GetKVLogger().WarnD("missing-table-in-db", l.M{
@@ -188,12 +188,12 @@ func buildLatencyChecks(schemaConfigs []config.SchemaConfig, postgresClient db.P
 func performLoadErrorsCheck(postgresClient db.PostgresClient) {
 	loadErrors, err := postgresClient.QuerySTLLoadErrors()
 	if err != nil {
-		fmt.Printf("Error with client performing load error check: %v.\n", err)
+		log.Printf("Error with client performing load error check: %v.\n", err)
 	} else {
 		if loadErrors != nil && len(loadErrors) > 0 {
 			loadErrorsJSON, err := json.Marshal(loadErrors)
 			if err != nil {
-				fmt.Printf("Error: %s", err)
+				log.Printf("Error: %s", err)
 			}
 			logger.CheckLoadErrorEvent(1, string(loadErrorsJSON))
 		} else {
