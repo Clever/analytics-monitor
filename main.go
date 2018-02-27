@@ -78,8 +78,6 @@ func main() {
 
 	performLoadErrorsCheck(redshiftProdConnection)
 	performLoadErrorsCheck(redshiftFastConnection)
-	performLoadErrorsCheck(rdsInternalConnection)
-	performLoadErrorsCheck(rdsExternalConnection)
 
 	redshiftLatencyErrors := append(redshiftProdErrors, redshiftFastErrors...)
 	rdsLatencyErrors := append(rdsInternalErrors, rdsExternalErrors...)
