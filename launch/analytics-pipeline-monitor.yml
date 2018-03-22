@@ -21,8 +21,7 @@ env:
 - RDS_EXTERNAL_PASSWORD
 - RDS_EXTERNAL_HOST
 - RDS_EXTERNAL_PORT
-dependencies:
-- gearmand
+dependencies: []
 resources:
   cpu: 0.0  # no CPU to improve resource usage (https://clever.atlassian.net/browse/INFRA-2120)
   max_mem: 0.02
@@ -30,3 +29,7 @@ shepherds:
 - benji.stein@clever.com
 expose: []
 team: eng-ip
+aws:
+  managed:
+    clever:
+    - Workflows

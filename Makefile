@@ -1,3 +1,4 @@
+include sfncli.mk
 include golang.mk
 .DEFAULT_GOAL := all
 
@@ -5,6 +6,7 @@ SHELL := /bin/bash
 PKG := github.com/Clever/analytics-pipeline-monitor
 PKGS := $(shell go list ./... | grep -v /vendor)
 EXECUTABLE = $(shell basename $(PKG))
+SFNCLI_VERSION := latest
 
 .PHONY: test $(PKGS) run clean vendor
 
@@ -17,7 +19,7 @@ all: test build
 
 test: $(PKGS)
 
-build:
+build: bin/sfncli
 	go build -o bin/$(EXECUTABLE) $(PKG)
 	mkdir -p bin/config
 	cp config/latency_config.json bin/config/latency_config.json
