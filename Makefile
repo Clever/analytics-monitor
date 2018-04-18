@@ -3,7 +3,7 @@ include golang.mk
 .DEFAULT_GOAL := all
 
 SHELL := /bin/bash
-PKG := github.com/Clever/analytics-pipeline-monitor
+PKG := github.com/Clever/analytics-monitor
 PKGS := $(shell go list ./... | grep -v /vendor)
 EXECUTABLE = $(shell basename $(PKG))
 SFNCLI_VERSION := latest

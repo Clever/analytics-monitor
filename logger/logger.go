@@ -34,7 +34,7 @@ const (
 var defaultLog logger
 
 func init() {
-	defaultLog = logger{log: kvLogger.New("analytics-pipeline-monitor")}
+	defaultLog = logger{log: kvLogger.New("analytics-monitor")}
 }
 
 // SetGlobalRouting installs a new log router with the input config
@@ -52,7 +52,7 @@ func GetKVLogger() kvLogger.KayveeLogger {
 	return defaultLog.log
 }
 
-// JobFinishedEvent logs when analytics-pipeline-monitor has completed
+// JobFinishedEvent logs when analytics-monitor has completed
 // along with payload and success/failure
 func (l *logger) JobFinishedEvent(payload string, didSucceed bool) {
 	value := 0

@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	l "github.com/Clever/analytics-pipeline-monitor/logger"
+	l "github.com/Clever/analytics-monitor/logger"
 )
 
 var (

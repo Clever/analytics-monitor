@@ -40,7 +40,7 @@ func TestJobFinished(t *testing.T) {
 	for _, test := range tests {
 		t.Logf("Routing rule %s", test.rule)
 
-		mocklog := kvLogger.NewMockCountLogger("analytics-pipeline-monitor")
+		mocklog := kvLogger.NewMockCountLogger("analytics-monitor")
 		defaultLog.log = mocklog // Overrides package level logger
 
 		defaultLog.JobFinishedEvent(test.payload, test.didSucceed)
@@ -82,7 +82,7 @@ func TestCheckLatency(t *testing.T) {
 	for _, test := range tests {
 		t.Logf("Routing rule %s", test.rule)
 
-		mocklog := kvLogger.NewMockCountLogger("analytics-pipeline-monitor")
+		mocklog := kvLogger.NewMockCountLogger("analytics-monitor")
 		defaultLog.log = mocklog // Overrides package level logger
 
 		defaultLog.CheckLatencyEvent(test.errValue, test.tableName, test.latency, test.latencyThreshold)
@@ -118,7 +118,7 @@ func TestCheckLoadError(t *testing.T) {
 	for _, test := range tests {
 		t.Logf("Routing rule %s", test.rule)
 
-		mocklog := kvLogger.NewMockCountLogger("analytics-pipeline-monitor")
+		mocklog := kvLogger.NewMockCountLogger("analytics-monitor")
 		defaultLog.log = mocklog // Overrides package level logger
 
 		defaultLog.CheckLoadErrorEvent(test.errValue, test.errors)

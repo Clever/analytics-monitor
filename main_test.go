@@ -10,8 +10,8 @@ import (
 	"github.com/kardianos/osext"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Clever/analytics-pipeline-monitor/config"
-	"github.com/Clever/analytics-pipeline-monitor/db"
+	"github.com/Clever/analytics-monitor/config"
+	"github.com/Clever/analytics-monitor/db"
 )
 
 // Copy kvconfig.yml to exec dir to simulate main.init()

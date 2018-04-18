@@ -13,9 +13,9 @@ import (
 
 	"github.com/kardianos/osext"
 
-	"github.com/Clever/analytics-pipeline-monitor/config"
-	"github.com/Clever/analytics-pipeline-monitor/db"
-	l "github.com/Clever/analytics-pipeline-monitor/logger"
+	"github.com/Clever/analytics-monitor/config"
+	"github.com/Clever/analytics-monitor/db"
+	l "github.com/Clever/analytics-monitor/logger"
 )
 
 var (

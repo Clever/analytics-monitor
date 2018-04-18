@@ -23,7 +23,7 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/Clever/analytics-pipeline-monitor"
+  name = "github.com/Clever/analytics-monitor"
 
 [[constraint]]
   name = "github.com/Clever/pq"

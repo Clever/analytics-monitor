@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Clever/analytics-pipeline-monitor/config"
-	l "github.com/Clever/analytics-pipeline-monitor/logger"
+	"github.com/Clever/analytics-monitor/config"
+	l "github.com/Clever/analytics-monitor/logger"
 	// Use our own version of the postgres library so we get keep-alive support.
 	// See https://github.com/Clever/pq/pull/1
 	_ "github.com/Clever/pq"
