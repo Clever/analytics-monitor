@@ -1,0 +1,10 @@
+run:
+  type: docker
+env: []
+resources:
+  cpu: 0.1
+  max_mem: 0.1
+shepherds:
+- "colin.schimmelfing@clever.com"
+expose: []
+team: "TODO"
