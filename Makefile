@@ -22,7 +22,7 @@ test: $(PKGS)
 build: bin/sfncli
 	go build -o bin/$(EXECUTABLE) $(PKG)
 	mkdir -p bin/config
-	cp config/latency_config.json bin/config/latency_config.json
+	cp config/example_config.json bin/config/example_config.json
 	cp kvconfig.yml bin/kvconfig.yml
 
 run: build
