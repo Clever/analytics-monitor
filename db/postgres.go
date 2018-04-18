@@ -74,56 +74,17 @@ func newPostgresClient(info PostgresCredentials, clusterName string) (PostgresCl
 	return &postgresClient{session, clusterName}, nil
 }
 
-// NewRedshiftProdClient initializes a client to fresh prod
-func NewRedshiftProdClient() (PostgresClient, error) {
+// NewPostgresClient initializes a postgres client
+func NewPostgresClient() (PostgresClient, error) {
 	info := PostgresCredentials{
-		Host:     config.RedshiftProdHost,
-		Port:     config.RedshiftProdPort,
-		Username: config.RedshiftProdUsername,
-		Password: config.RedshiftProdPassword,
-		Database: config.RedshiftProdDatabase,
+		Host:     config.PostgresHost,
+		Port:     config.PostgresPort,
+		Username: config.PostgresUsername,
+		Password: config.PostgresPassword,
+		Database: config.PostgresDatabase,
 	}
 
 	return newPostgresClient(info, "redshift-prod")
-}
-
-// NewRedshiftFastClient initializes a client to fast prod
-func NewRedshiftFastClient() (PostgresClient, error) {
-	info := PostgresCredentials{
-		Host:     config.RedshiftFastHost,
-		Port:     config.RedshiftFastPort,
-		Username: config.RedshiftFastUsername,
-		Password: config.RedshiftFastPassword,
-		Database: config.RedshiftFastDatabase,
-	}
-
-	return newPostgresClient(info, "redshift-fast")
-}
-
-// NewRDSInternalClient initializes a client to internal rds
-func NewRDSInternalClient() (PostgresClient, error) {
-	info := PostgresCredentials{
-		Host:     config.RDSInternalHost,
-		Port:     config.RDSInternalPort,
-		Username: config.RDSInternalUsername,
-		Password: config.RDSInternalPassword,
-		Database: config.RDSInternalDatabase,
-	}
-
-	return newPostgresClient(info, "rds-internal")
-}
-
-// NewRDSExternalClient initializes a client to external rds
-func NewRDSExternalClient() (PostgresClient, error) {
-	info := PostgresCredentials{
-		Host:     config.RDSExternalHost,
-		Port:     config.RDSExternalPort,
-		Username: config.RDSExternalUsername,
-		Password: config.RDSExternalPassword,
-		Database: config.RDSExternalDatabase,
-	}
-
-	return newPostgresClient(info, "rds-external")
 }
 
 // GetClusterName returns the name of the client Postgres cluster
