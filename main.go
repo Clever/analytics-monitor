@@ -52,12 +52,12 @@ func main() {
 
 	defer logger.JobFinishedEvent(strings.Join(os.Args[1:], " "), true)
 
-	postgresConn, err := db.PostgresClient()
+	postgresConn, err := db.NewPostgresClient()
 	fatalIfErr(err, "postgres-failed-init")
 
 	configChecks := config.ParseChecks(latencyConfigPath)
 
-	postgresChecks := buildLatencyChecks(configChecks.PostgresProdChecks, postgresConn)
+	postgresChecks := buildLatencyChecks(configChecks.PostgresChecks, postgresConn)
 	queryLatencyErrors := performLatencyChecks(postgresConn, postgresChecks)
 
 	performLoadErrorsCheck(postgresConn)
