@@ -6,7 +6,7 @@ Owned by eng-internal-products
 
 ## Overview
 
-`analytics-pipeline-monitor` (APM) runs as a worker that connects to Redshift (fresh prod and fast prod) on an hourly basis and performs the following functions:
+`analytics-pipeline-monitor` (APM) runs as a worker that connects to Redshift on an hourly basis and performs the following functions:
 
 - Surfaces data latency by querying all tables for the latest data timestamp. A recent timestamp means SOME data is fresh; an old timestamp means NO data is fresh.
 - Delivers actionable alerts by posting a message in #oncall-ip whenever the data latency exceeds a configurable per-table threshold (ex. 2h).

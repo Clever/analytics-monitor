@@ -12,6 +12,6 @@ import (
 // formatting issue with the latency_config
 func TestParseChecks(t *testing.T) {
 	assert.NotPanics(t, func() {
-		ParseChecks("latency_config.json")
+		ParseChecks("example_config.json")
 	}, "Unable to parse latency checks")
 }

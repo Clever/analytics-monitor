@@ -42,7 +42,7 @@ func init() {
 		log.Fatal(err)
 	}
 
-	latencyConfigPath = path.Join(dir, "config/latency_config.json")
+	latencyConfigPath = path.Join(dir, "config/example_config.json")
 	globalDefaultLatency = "24h"
 }
 
@@ -52,36 +52,16 @@ func main() {
 
 	defer logger.JobFinishedEvent(strings.Join(os.Args[1:], " "), true)
 
-	redshiftProdConnection, err := db.NewRedshiftProdClient()
-	fatalIfErr(err, "redshift-prod-failed-init")
-
-	redshiftFastConnection, err := db.NewRedshiftFastClient()
-	fatalIfErr(err, "redshift-fast-failed-init")
-
-	rdsInternalConnection, err := db.NewRDSInternalClient()
-	fatalIfErr(err, "rds-internal-failed-init")
-
-	rdsExternalConnection, err := db.NewRDSExternalClient()
-	fatalIfErr(err, "rds-external-failed-init")
+	postgresConn, err := db.PostgresClient()
+	fatalIfErr(err, "postgres-failed-init")
 
 	configChecks := config.ParseChecks(latencyConfigPath)
 
-	redshiftProdChecks := buildLatencyChecks(configChecks.RedshiftProdChecks, redshiftProdConnection)
-	redshiftFastChecks := buildLatencyChecks(configChecks.RedshiftFastChecks, redshiftFastConnection)
-	rdsInternalChecks := buildLatencyChecks(configChecks.RDSInternalChecks, rdsInternalConnection)
-	rdsExternalChecks := buildLatencyChecks(configChecks.RDSExternalChecks, rdsExternalConnection)
+	postgresChecks := buildLatencyChecks(configChecks.PostgresProdChecks, postgresConn)
+	queryLatencyErrors := performLatencyChecks(postgresConn, postgresChecks)
 
-	redshiftProdErrors := performLatencyChecks(redshiftProdConnection, redshiftProdChecks)
-	redshiftFastErrors := performLatencyChecks(redshiftFastConnection, redshiftFastChecks)
-	rdsInternalErrors := performLatencyChecks(rdsInternalConnection, rdsInternalChecks)
-	rdsExternalErrors := performLatencyChecks(rdsExternalConnection, rdsExternalChecks)
+	performLoadErrorsCheck(postgresConn)
 
-	performLoadErrorsCheck(redshiftProdConnection)
-	performLoadErrorsCheck(redshiftFastConnection)
-
-	redshiftLatencyErrors := append(redshiftProdErrors, redshiftFastErrors...)
-	rdsLatencyErrors := append(rdsInternalErrors, rdsExternalErrors...)
-	queryLatencyErrors := append(redshiftLatencyErrors, rdsLatencyErrors...)
 	if len(queryLatencyErrors) > 0 {
 		var errStrs []string
 		for _, latencyErr := range queryLatencyErrors {
