@@ -1,0 +1,41 @@
+{
+  "postgres-checks": [
+    {
+      "schema": "test",
+      "default_threshold": "30h",
+      "default_timestamp_column": "_data_timestamp",
+      "checks": [
+        {
+          "table": "example1",
+          "latency": {
+            "timestamp_column": "time",
+            "threshold": "30h"
+          }
+        },
+        {
+          "table": "example2",
+          "latency": {
+            "timestamp_column": "updated_at",
+            "threshold": "30h"
+          }
+        },
+      ]
+    },
+    {
+      "schema": "test2",
+      "default_threshold": "3h",
+      "default_timestamp_column": "time",
+      "_comment": "here is a comment",
+      "omit_tables": ["spammy_table"],
+      "checks": [
+        {
+          "table": "thing_we_want_to_check",
+          "latency": {
+            "timestamp_column": "time",
+            "threshold": "24h"
+          }
+        }
+      ]
+    },
+  ],
+}
