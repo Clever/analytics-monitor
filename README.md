@@ -7,7 +7,7 @@ diagnoses latency-related metrics issues
 `analytics-monitor` (AM) runs as a worker that connects to a Postgres db and performs the following functions:
 
 - Surfaces data latency by querying all tables for the latest data timestamp. A recent timestamp means SOME data is fresh; an old timestamp means NO data is fresh.
-- Delivers actionable alerts by posting a message in #oncall-ip whenever the data latency exceeds a configurable per-table threshold (ex. 2h).
+- Delivers actionable alerts by posting a message in slack whenever the data latency exceeds a configurable per-table threshold (ex. 2h).
 - Easily improves coverage by declaring latency checks and thresholds in a config file. No application code is required to add additional checks or alerts for future tables.
 - Default values for latency and timestamp column can be set per schema. This means that if new tables are added to a schema already checked by APM, then APM will latency check those tables using the default values without requiring any config changes. If the new table has characteristics differing from the schema defaults, then they can be overriden by making a config change (shown below).
 
