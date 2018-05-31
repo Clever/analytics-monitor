@@ -18,7 +18,7 @@
             "timestamp_column": "updated_at",
             "threshold": "30h"
           }
-        },
+        }
       ]
     },
     {
@@ -36,6 +36,6 @@
           }
         }
       ]
-    },
-  ],
+    }
+  ]
 }
