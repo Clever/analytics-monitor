@@ -21,7 +21,7 @@ jobs:
         command: mkdir -p $CIRCLE_ARTIFACTS $CIRCLE_TEST_REPORTS
         name: Set up CircleCI artifacts directories
     - run:
-        command: sudo apt-get install postgresql
+        command: sudo apt-get update && sudo apt-get install postgresql
         name: Install psql
     - run:
         command: |-
