@@ -8,7 +8,7 @@ env:
 - POSTGRES_PORT
 dependencies: []
 resources:
-  cpu: 0.0  # no CPU to improve resource usage (https://clever.atlassian.net/browse/INFRA-2120)
+  cpu: 0.1  # no CPU to improve resource usage (https://clever.atlassian.net/browse/INFRA-2120)
   max_mem: 0.02
 shepherds:
 expose: []
