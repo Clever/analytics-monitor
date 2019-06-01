@@ -10,7 +10,7 @@ SFNCLI_VERSION := latest
 
 .PHONY: test $(PKGS) run clean vendor
 
-$(eval $(call golang-version-check,1.10))
+$(eval $(call golang-version-check,1.12))
 
 export POSTGRES_HOST=localhost
 export POSTGRES_PORT=5432
