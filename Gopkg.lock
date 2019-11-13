@@ -4,8 +4,11 @@
 [[projects]]
   branch = "master"
   name = "github.com/Clever/pq"
-  packages = ["."]
-  revision = "615733e60b17935b5d162f72c2fa608abd8bdec4"
+  packages = [
+    ".",
+    "oid"
+  ]
+  revision = "278004c23b92efa6c00c64eb17d3a3be8201e981"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -18,18 +21,16 @@
   revision = "9d302b58e975387d0b4d9be876622c86cefe64be"
 
 [[projects]]
-  name = "github.com/lib/pq"
-  packages = [".","oid"]
-  revision = "e182dc4027e2ded4b19396d638610f2653295f36"
-
-[[projects]]
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
   revision = "d8ed2627bdf02c080bf22230dbb337003b7aba2d"
 
 [[projects]]
   name = "github.com/stretchr/testify"
-  packages = ["assert","require"]
+  packages = [
+    "assert",
+    "require"
+  ]
   revision = "69483b4bd14f5845b5a1e55bca19e954e827f1d0"
   version = "v1.1.4"
 
@@ -52,7 +53,11 @@
 
 [[projects]]
   name = "gopkg.in/Clever/kayvee-go.v6"
-  packages = [".","logger","router"]
+  packages = [
+    ".",
+    "logger",
+    "router"
+  ]
   revision = "096364e316a52652d3493be702d8105d8d01db84"
   version = "v6.6.0"
 
