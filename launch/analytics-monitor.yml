@@ -12,7 +12,7 @@ resources:
   max_mem: 0.02
 shepherds:
 expose: []
-team: eng-ip
+team: eng-deip
 aws:
   managed:
     clever:
