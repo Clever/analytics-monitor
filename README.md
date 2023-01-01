@@ -37,3 +37,4 @@ Defining checks in analytics-monitor can be accomplished by adding a new entry t
 `analytics-monitor` then reads from this config to perform latency checks. `schema` + `table` identifies the table, and `latency.timestamp_column` identifies the time a row enters Redshift. `latency.threshold` configures the maximum amount of latency acceptable for the table's data in [Go time format](https://golang.org/pkg/time/#ParseDuration). If the threshold is exceeded, then analytics-monitor fires an alert in SignalFx.
 
 For tables that are not explicitly declared in the config, `default_threshold` and `default_timestamp_column` will be used as substitutes for the above values. `omit_tables` allows tables to be whitelisted from latency checks.
+test
