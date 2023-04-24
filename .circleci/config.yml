@@ -3,12 +3,12 @@ jobs:
   build:
     working_directory: /go/src/github.com/Clever/analytics-monitor
     docker:
-    - image: circleci/golang:1.13-stretch
+    - image: cimg/go:1.16
     - image: circleci/postgres:9.4-alpine-ram
       environment:
         GOPRIVATE: github.com/Clever/*
         POSTGRES_USER: circleci
-    - image: circleci/mongo:3.2.20-jessie-ram
+    - image: circleci/mongo:4.4
     environment:
       GOPRIVATE: github.com/Clever/*
       CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
