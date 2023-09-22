@@ -1,9 +1,9 @@
 version: 2
 jobs:
   build:
-    working_directory: /go/src/github.com/Clever/analytics-monitor
+    working_directory: ~/go/src/github.com/Clever/analytics-monitor
     docker:
-    - image: circleci/golang:1.16-buster
+    - image: cimg/go:1.21
     - image: circleci/postgres:9.4-alpine-ram
       environment:
         GOPRIVATE: github.com/Clever/*
